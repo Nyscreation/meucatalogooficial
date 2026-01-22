@@ -51,6 +51,7 @@
         .info { flex: 1; }
         .info strong { display: block; font-size: 0.95rem; color: white; }
         .info span { color: var(--text-muted); font-size: 0.85rem; }
+        .cod-badge { font-family: monospace; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; color: #fbbf24; margin-left: 5px; }
         .btn-del { color: #f87171; background: rgba(239, 68, 68, 0.1); border: none; padding: 8px; border-radius: 8px; cursor: pointer; }
 
         #previewCapa { width: 100%; height: 120px; object-fit: cover; border-radius: 12px; margin-bottom: 15px; background: #334155; border: 1px solid var(--glass-border); }
@@ -148,7 +149,7 @@
             </button>
         </div>
         <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">
-            Versão 3.1 - Link Fix
+            Versão 3.2 - Cód Produto
         </div>
     </div>
 
@@ -181,11 +182,8 @@
 
     document.getElementById('displayId').innerText = LOJA_ID;
 
-    // --- CORREÇÃO DO LINK AQUI ---
-    // Pega o endereço completo onde o admin está rodando e troca o nome do arquivo
-    // Isso garante que a pasta do projeto seja mantida no link
+    // --- LINK CORRIGIDO ---
     const linkLoja = window.location.href.replace("admin.html", "catalogo.html");
-    
     document.getElementById('linkLojaBtn').href = linkLoja;
 
     window.copiarLink = () => { navigator.clipboard.writeText(linkLoja); showToast("Link copiado!"); }
@@ -232,7 +230,6 @@
                         const dias = (data.plano_escolhido === 'anual') ? 365 : 30;
                         hoje.setDate(hoje.getDate() + dias);
                         
-                        // IMPORTANTE: Usa o set mas mantendo os dados antigos
                         await set(configRef, { ...data, status: "ativo", validade: hoje.toISOString() });
                         alert("✅ Loja Ativada!"); window.location.reload();
                     } else { alert("❌ Código inválido!"); }
@@ -262,7 +259,7 @@
         }
     });
 
-    // SALVAR CONFIG (COM PROTEÇÃO DE DADOS)
+    // SALVAR CONFIG
     document.getElementById('btnSalvarConfig').addEventListener('click', async () => {
         const btn = document.getElementById('btnSalvarConfig');
         const file = document.getElementById('inputCapa').files[0];
@@ -271,13 +268,11 @@
         try {
             let capaUrl = document.getElementById('previewCapa').src;
             if(file) capaUrl = await uploadToImgBB(file);
-
-            // Fetch dados atuais para não perder validade/status
             const snapshot = await get(configRef);
             const currentData = snapshot.val() || {};
 
             await set(configRef, {
-                ...currentData, // Mantém tudo que já existe
+                ...currentData,
                 nome: document.getElementById('confNome').value,
                 endereco: document.getElementById('confEnd').value,
                 zap: document.getElementById('confZap').value,
@@ -303,8 +298,17 @@
         try {
             let imgUrl = "https://via.placeholder.com/150?text=Produto";
             if(file) imgUrl = await uploadToImgBB(file);
+            
+            // --- GERA O CÓDIGO DO PRODUTO (5 DÍGITOS) ---
+            const codProd = Math.floor(10000 + Math.random() * 90000);
 
-            await set(push(produtosRef), { nome, cat, preco: parseFloat(preco), img: imgUrl });
+            await set(push(produtosRef), { 
+                nome, 
+                cat, 
+                preco: parseFloat(preco), 
+                img: imgUrl,
+                codigo: codProd // Salva o código
+            });
             showToast("Produto adicionado!");
             document.getElementById('nomeProd').value = ""; document.getElementById('precoProd').value = ""; document.getElementById('fotoProd').value = "";
         } catch(e) { alert(e); } finally { btn.innerText = "Adicionar Produto"; }
@@ -317,10 +321,14 @@
         if(data) {
             Object.keys(data).reverse().forEach(key => { 
                 const p = data[key];
+                const codVisual = p.codigo || "---";
                 div.innerHTML += `
                     <div class="product-item">
                         <img src="${p.img}">
-                        <div class="info"><strong>${p.nome}</strong><span>R$ ${p.preco} • ${p.cat}</span></div>
+                        <div class="info">
+                            <strong>${p.nome} <span class="cod-badge">#${codVisual}</span></strong>
+                            <span>R$ ${p.preco} • ${p.cat}</span>
+                        </div>
                         <button class="btn-del" onclick="deletar('${key}')"><i class='bx bx-trash'></i></button>
                     </div>`;
             });
