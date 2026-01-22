@@ -148,7 +148,7 @@
             </button>
         </div>
         <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">
-            Versão 3.0 - Ativação
+            Versão 3.1 - Link Fix
         </div>
     </div>
 
@@ -180,7 +180,12 @@
     if (!LOJA_ID) window.location.href = "index.html";
 
     document.getElementById('displayId').innerText = LOJA_ID;
-    const linkLoja = `${window.location.origin}/catalogo.html?id=${LOJA_ID}`;
+
+    // --- CORREÇÃO DO LINK AQUI ---
+    // Pega o endereço completo onde o admin está rodando e troca o nome do arquivo
+    // Isso garante que a pasta do projeto seja mantida no link
+    const linkLoja = window.location.href.replace("admin.html", "catalogo.html");
+    
     document.getElementById('linkLojaBtn').href = linkLoja;
 
     window.copiarLink = () => { navigator.clipboard.writeText(linkLoja); showToast("Link copiado!"); }
