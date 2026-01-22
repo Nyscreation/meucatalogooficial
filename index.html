@@ -14,13 +14,12 @@
         h1 { font-size: 1.8rem; margin: 0 0 10px 0; text-align: center; background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         p.sub { color: #94a3b8; text-align: center; margin-bottom: 30px; font-size: 0.9rem; }
         
-        /* INPUTS */
         .input-group { margin-bottom: 15px; }
         label { font-size: 0.8rem; font-weight: 600; color: #cbd5e1; margin-left: 5px; display: block; margin-bottom: 5px; }
         input { width: 100%; padding: 16px; border-radius: 12px; border: 1px solid #334155; background: #1e293b; color: white; font-size: 1rem; outline: none; transition: 0.3s; box-sizing: border-box; }
         input:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2); }
         
-        /* PLANOS */
+        /* CARDS DE PREÇO */
         .planos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; }
         .plano-card { background: #1e293b; border: 2px solid #334155; border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; }
         .plano-card:hover { border-color: #475569; }
@@ -32,11 +31,9 @@
         .check-icon { position: absolute; top: -10px; right: -10px; background: #3b82f6; color: white; border-radius: 50%; padding: 4px; display: none; }
         .plano-card.selected .check-icon { display: block; }
 
-        /* BUTTON */
         button { width: 100%; padding: 18px; background: #25D366; color: white; border: none; font-size: 1rem; font-weight: 800; border-radius: 12px; cursor: pointer; transition: transform 0.2s; box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2); display: flex; align-items: center; justify-content: center; gap: 10px; }
         button:active { transform: scale(0.98); }
-        button:hover { background: #1ebc57; }
-
+        
         .footer-link { margin-top: 20px; text-align: center; font-size: 0.85rem; }
         .footer-link a { color: #60a5fa; text-decoration: none; }
     </style>
@@ -92,19 +89,8 @@
         window.selectPlan = (plan, price) => {
             selectedPlan = plan;
             selectedPrice = price;
-            
-            // Visual update
             document.querySelectorAll('.plano-card').forEach(c => c.classList.remove('selected'));
             document.getElementById(`card-${plan}`).classList.add('selected');
-        }
-
-        window.irParaLogin = () => {
-             const nome = document.getElementById('nomeLoja').value;
-             if(nome) {
-                 window.location.href = `admin.html?id=${criarSlug(nome)}`;
-             } else {
-                 alert("Digite o nome da sua loja para entrar.");
-             }
         }
 
         function criarSlug(texto) {
@@ -113,6 +99,12 @@
                 .replace(/\s+/g, '-')
                 .replace(/[^\w\-]+/g, '')
                 .replace(/\-\-+/g, '-');
+        }
+
+        window.irParaLogin = () => {
+             const nome = document.getElementById('nomeLoja').value;
+             if(nome) window.location.href = `admin.html?id=${criarSlug(nome)}`;
+             else alert("Digite o nome da sua loja para entrar.");
         }
 
         window.contratar = async () => {
@@ -125,17 +117,16 @@
             const lojaRef = ref(db, 'lojas/' + slug);
             const snapshot = await get(lojaRef);
 
-            // GERA UM CÓDIGO DE 4 DÍGITOS ALEATÓRIO PARA ESSA LOJA
+            // GERA O CÓDIGO SECRETO (4 Dígitos)
             const codigoAtivacao = Math.floor(1000 + Math.random() * 9000).toString();
 
             if(!snapshot.exists()) {
-                // Cria a loja BLOQUEADA
                 await set(lojaRef, {
                     config: { 
                         nome: nome, 
                         zap: zap, 
-                        status: "pendente", // STATUS DE BLOQUEIO
-                        codigo_secreto: codigoAtivacao, // CÓDIGO QUE VOCÊ VAI VER NO MASTER
+                        status: "pendente", // STATUS BLOQUEADO
+                        codigo_secreto: codigoAtivacao, // CÓDIGO GERADO
                         plano_escolhido: selectedPlan,
                         validade: new Date().toISOString() // Data vencida
                     },
@@ -143,14 +134,12 @@
                 });
             }
 
-            // Redireciona para o seu WhatsApp
-            const seuNumero = "5597984431811"; // SEU NÚMERO AQUI
+            // REDIRECIONA PARA SEU WHATSAPP
+            const seuNumero = "5597984431811"; 
             const msg = `Olá! Quero ativar a loja *${nome}* no plano *${selectedPlan.toUpperCase()}* (R$ ${selectedPrice.toFixed(2)}). Aguardo a chave de acesso.`;
             
-            // Abre o zap
             window.open(`https://wa.me/${seuNumero}?text=${encodeURIComponent(msg)}`, '_blank');
             
-            // Redireciona o usuário para o admin (onde ele vai dar de cara com o bloqueio)
             setTimeout(() => {
                 window.location.href = `admin.html?id=${slug}`;
             }, 1000);
