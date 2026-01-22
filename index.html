@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Crie seu Catálogo Grátis</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f0f0; }
+        .card { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; max-width: 400px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;}
+        button { width: 100%; padding: 15px; background: #dc2626; color: white; border: none; font-weight: bold; cursor: pointer; border-radius: 5px; }
+        button:hover { background: #b91c1c; }
+        .url-preview { font-size: 0.8rem; color: #666; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Crie sua Loja Digital</h1>
+    <p>Comece a vender no WhatsApp em segundos.</p>
+    
+    <input type="text" id="nomeLoja" placeholder="Nome da sua Loja (ex: Pizzaria do Edu)">
+    <input type="text" id="zapLoja" placeholder="Seu WhatsApp (apenas números)">
+    
+    <div class="url-preview">Sua loja será: seudesign.com/catalogo.html?id=<b id="slugPreview">...</b></div>
+
+    <button onclick="criarLoja()">CRIAR CATÁLOGO GRÁTIS</button>
+</div>
+
+<script type="module">
+    import { db, ref, set, get } from './firebase-config.js';
+
+    const inputNome = document.getElementById('nomeLoja');
+    
+    // Função para criar "Slug" (URL amigável: "Pizzaria do Edu" -> "pizzaria-do-edu")
+    function criarSlug(texto) {
+        return texto.toString().toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, "") // Remove acentos
+            .replace(/\s+/g, '-')           // Espaços viram hífens
+            .replace(/[^\w\-]+/g, '')       // Remove caracteres especiais
+            .replace(/\-\-+/g, '-');        // Remove hífens duplicados
+    }
+
+    inputNome.addEventListener('input', () => {
+        document.getElementById('slugPreview').innerText = criarSlug(inputNome.value);
+    });
+
+    window.criarLoja = async () => {
+        const nome = inputNome.value;
+        const zap = document.getElementById('zapLoja').value;
+        const slug = criarSlug(nome);
+
+        if(!nome || !zap) return alert("Preencha tudo!");
+
+        const lojaRef = ref(db, 'lojas/' + slug);
+
+        // Verifica se já existe
+        const snapshot = await get(lojaRef);
+        if(snapshot.exists()) {
+            alert("Já existe uma loja com esse nome. Tente outro.");
+            return;
+        }
+
+        // Cria a loja no banco
+        await set(lojaRef, {
+            config: {
+                nome: nome,
+                zap: zap,
+                endereco: "Endereço não configurado",
+                capa: ""
+            },
+            produtos: {} // Começa vazio
+        });
+
+        alert("Loja criada com sucesso!");
+        // Redireciona para o Painel Admin (passando o ID)
+        window.location.href = `admin.html?id=${slug}`;
+    }
+</script>
+</body>
+</html>

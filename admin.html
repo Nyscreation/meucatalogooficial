@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f6f8; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        h2 { margin-top: 0; color: #1e293b; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        label { font-weight: bold; font-size: 0.9rem; color: #475569; display: block; margin-top: 15px; }
+        input, select, button { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #cbd5e1; box-sizing: border-box; }
+        .btn-blue { background: #2563eb; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-green { background: #16a34a; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        button:disabled { background: #94a3b8; cursor: wait; }
+        .lista-item { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding: 10px 0; }
+        .lista-item img { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; margin-right: 10px; }
+        .btn-del { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; width: auto; }
+        #previewCapa { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; margin-top: 10px; display: none; border: 1px solid #ccc; }
+        .header-admin { text-align: center; margin-bottom: 20px; }
+        .link-loja { color: #2563eb; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-admin">
+        <h3>Editando: <span id="displayNomeId">...</span></h3>
+        <a href="#" id="linkVerLoja" target="_blank" class="link-loja">👁️ Ver Minha Loja</a>
+    </div>
+
+    <div class="card">
+        <h2>🏢 Configuração da Loja</h2>
+        <label>📸 Foto da Capa / Banner</label>
+        <input type="file" id="inputCapa" accept="image/*">
+        <img id="previewCapa">
+        
+        <label>🏪 Nome da Loja</label>
+        <input type="text" id="confNome" placeholder="Ex: 3 Irmãs Variedades">
+        
+        <label>📍 Endereço / Slogan</label>
+        <input type="text" id="confEnd" placeholder="Ex: Av. Principal, 123 - Centro">
+        
+        <label>📱 WhatsApp (Somente números com DDD)</label>
+        <input type="number" id="confZap" placeholder="Ex: 5592999999999">
+
+        <button id="btnSalvarConfig" class="btn-blue" style="margin-top:20px">💾 SALVAR DADOS DA LOJA</button>
+    </div>
+
+    <div class="card">
+        <h2>📦 Adicionar Produto</h2>
+        <label>📸 Foto do Produto</label>
+        <input type="file" id="fotoProd" accept="image/*">
+        <label>Nome</label>
+        <input type="text" id="nomeProd" placeholder="Ex: Tambor 200L">
+        <label>Categoria</label>
+        <select id="catProd">
+            <option value="Ofertas">🔥 Ofertas</option>
+            <option value="Industrial">🏭 Industrial</option>
+            <option value="Doméstico">🏠 Doméstico</option>
+        </select>
+        <label>Preço (R$)</label>
+        <input type="number" id="precoProd" placeholder="Ex: 50.00">
+        <button id="btnSalvarProd" class="btn-green">CADASTRAR PRODUTO</button>
+
+        <div style="margin-top: 30px; border-top: 2px dashed #e2e8f0; padding-top: 20px;">
+            <strong>Produtos Ativos:</strong>
+            <div id="lista">Carregando...</div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { db, ref, push, set, onValue, remove } from './firebase-config.js';
+
+    // 1. CAPTURAR O ID DA URL (A PARTE MAIS IMPORTANTE)
+    const params = new URLSearchParams(window.location.search);
+    const LOJA_ID = params.get('id');
+
+    // Se não tiver ID, volta para o início
+    if (!LOJA_ID) {
+        alert("Erro: ID da loja não fornecido.");
+        window.location.href = "index.html";
+    }
+
+    // Atualiza links visuais
+    document.getElementById('displayNomeId').innerText = LOJA_ID;
+    document.getElementById('linkVerLoja').href = `catalogo.html?id=${LOJA_ID}`;
+
+    const IMGBB_KEY = "7a7575eb8903aface0123fece09257fa"; 
+
+    async function uploadToImgBB(file) {
+        const formData = new FormData();
+        formData.append("image", file);
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body: formData });
+        const data = await res.json();
+        if(data.success) return data.data.url;
+        throw new Error("Erro no upload da imagem");
+    }
+
+    // --- CONFIGURAÇÃO (Agora aponta para lojas/ID/config) ---
+    const configRef = ref(db, `lojas/${LOJA_ID}/config`); // MUDANÇA AQUI
+    
+    onValue(configRef, (snapshot) => {
+        const data = snapshot.val();
+        if(data) {
+            document.getElementById('confNome').value = data.nome || "";
+            document.getElementById('confEnd').value = data.endereco || "";
+            document.getElementById('confZap').value = data.zap || "";
+            if(data.capa) {
+                const img = document.getElementById('previewCapa');
+                img.src = data.capa;
+                img.style.display = 'block';
+            }
+        }
+    });
+
+    document.getElementById('btnSalvarConfig').addEventListener('click', async () => {
+        const btn = document.getElementById('btnSalvarConfig');
+        const nome = document.getElementById('confNome').value;
+        const end = document.getElementById('confEnd').value;
+        const zap = document.getElementById('confZap').value;
+        const file = document.getElementById('inputCapa').files[0];
+
+        if(!nome || !zap) return alert("Nome e WhatsApp são obrigatórios!");
+        btn.disabled = true;
+        btn.innerText = "⏳ Salvando...";
+
+        try {
+            let capaUrl = document.getElementById('previewCapa').src;
+            if(file) {
+                btn.innerText = "⏳ Enviando Capa...";
+                capaUrl = await uploadToImgBB(file);
+            }
+
+            await set(configRef, {
+                nome: nome,
+                endereco: end,
+                zap: zap,
+                capa: capaUrl
+            });
+            alert("✅ Dados Atualizados!");
+        } catch (e) {
+            alert("Erro: " + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "💾 SALVAR DADOS DA LOJA";
+        }
+    });
+
+    // --- PRODUTOS (Agora aponta para lojas/ID/produtos) ---
+    const produtosRef = ref(db, `lojas/${LOJA_ID}/produtos`); // MUDANÇA AQUI
+
+    document.getElementById('btnSalvarProd').addEventListener('click', async () => {
+        const btn = document.getElementById('btnSalvarProd');
+        const nome = document.getElementById('nomeProd').value;
+        const cat = document.getElementById('catProd').value;
+        const preco = document.getElementById('precoProd').value;
+        const file = document.getElementById('fotoProd').files[0];
+
+        if(!nome || !preco) return alert("Preencha Nome e Preço!");
+        btn.disabled = true;
+        btn.innerText = "⏳ Enviando...";
+
+        try {
+            let imgUrl = "https://via.placeholder.com/150?text=Sem+Foto";
+            if(file) imgUrl = await uploadToImgBB(file);
+
+            // IMPORTANTE: push agora é em produtosRef (que já tem o ID da loja)
+            await set(push(produtosRef), {
+                nome, cat, preco: parseFloat(preco), img: imgUrl
+            });
+
+            alert("✅ Produto Cadastrado!");
+            document.getElementById('nomeProd').value = "";
+            document.getElementById('precoProd').value = "";
+            document.getElementById('fotoProd').value = "";
+        } catch (e) {
+            alert("Erro: " + e.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "CADASTRAR PRODUTO";
+        }
+    });
+
+    onValue(produtosRef, (snapshot) => {
+        const div = document.getElementById('lista');
+        div.innerHTML = "";
+        const data = snapshot.val();
+        if(data) {
+            Object.keys(data).forEach(key => {
+                const p = data[key];
+                div.innerHTML += `
+                    <div class="lista-item">
+                        <div style="display:flex; align-items:center">
+                            <img src="${p.img}">
+                            <div><strong>${p.nome}</strong><br>R$ ${p.preco}</div>
+                        </div>
+                        <button class="btn-del" onclick="deletar('${key}')">🗑️</button>
+                    </div>`;
+            });
+        } else {
+            div.innerHTML = "Nenhum produto.";
+        }
+    });
+
+    window.deletar = async (itemId) => {
+        // Remove apenas o item dentro desta loja específica
+        if(confirm("Apagar?")) await remove(ref(db, `lojas/${LOJA_ID}/produtos/${itemId}`));
+    }
+</script>
+</body>
+</html>

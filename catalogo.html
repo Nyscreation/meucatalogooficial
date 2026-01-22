@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { background: #1a1a1a; font-family: 'Roboto', sans-serif; margin: 0; min-height: 100vh; display: flex; justify-content: center; }
+        .folha { background: white; width: 100%; max-width: 600px; min-height: 100vh; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        header { background-color: #dc2626; background-size: cover; background-position: center; position: relative; color: white; padding: 40px 20px; text-align: center; border-bottom: 8px solid #facc15; }
+        .overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 1; }
+        .header-content { position: relative; z-index: 2; }
+        h1 { font-family: 'Anton'; font-size: 2.8rem; margin: 0; line-height: 1; text-transform: uppercase; text-shadow: 2px 2px 5px black; }
+        .sub { font-size: 1.1rem; margin-top: 10px; font-weight: bold; text-shadow: 1px 1px 3px black; }
+        .faixa { background: black; color: #facc15; font-family: 'Anton'; text-align: center; font-size: 1.5rem; padding: 8px; margin: 20px auto; width: 90%; transform: skewX(-10deg); text-transform: uppercase; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 10px; }
+        .card { border: 1px solid #ddd; padding: 10px; text-align: center; display: flex; flex-direction: column; }
+        .card img { width: 100%; height: 140px; object-fit: contain; margin-bottom: 10px; }
+        .nome { font-weight: 700; height: 2.4em; overflow: hidden; color: #333; font-size: 0.9rem; }
+        .preco { background: #facc15; color: black; font-family: 'Anton'; font-size: 1.5rem; padding: 5px; transform: rotate(-2deg); margin: 5px auto; display: inline-block; border: 1px dashed black; }
+        .btn { background: #16a34a; color: white; text-decoration: none; padding: 10px; font-weight: bold; border-radius: 4px; margin-top: auto; display: block; }
+        .btn:hover { background: #15803d; }
+        .zap-float { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: #25D366; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 100; color: white; }
+    </style>
+</head>
+<body>
+
+    <a href="#" id="linkFloat" class="zap-float">
+        <svg width="30" height="30" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+    </a>
+
+    <div class="folha">
+        <header id="headerLoja">
+            <div class="overlay"></div>
+            <div class="header-content">
+                <h1 id="txtNome">CARREGANDO...</h1>
+                <div class="sub" id="txtEnd">...</div>
+            </div>
+        </header>
+
+        <div id="conteudo" style="padding-bottom: 50px; flex: 1;">
+            <p style="text-align:center; padding:50px; color:#666">Buscando ofertas...</p>
+        </div>
+        
+        <div style="text-align: center; padding: 20px; font-size: 0.8rem; color: #999; border-top: 1px solid #eee;">
+            Catálogo atualizado em tempo real.
+        </div>
+    </div>
+
+<script type="module">
+    import { db, ref, onValue } from './firebase-config.js';
+
+    // 1. CAPTURAR O ID DA URL
+    const params = new URLSearchParams(window.location.search);
+    const LOJA_ID = params.get('id');
+
+    if (!LOJA_ID) {
+        alert("Loja não encontrada!");
+        window.location.href = "index.html";
+    }
+
+    let ZAP_LOJA = ""; 
+    let NOME_LOJA = "";
+
+    // 2. BUSCAR DADOS DA LOJA ESPECÍFICA
+    const configRef = ref(db, `lojas/${LOJA_ID}/config`);
+    
+    onValue(configRef, (snapshot) => {
+        const data = snapshot.val();
+        
+        if(data) {
+            NOME_LOJA = data.nome || "Loja";
+            ZAP_LOJA = data.zap || "";
+            document.getElementById('txtNome').innerText = NOME_LOJA;
+            document.getElementById('txtEnd').innerText = data.endereco || "";
+            if(ZAP_LOJA) document.getElementById('linkFloat').href = `https://wa.me/${ZAP_LOJA}`;
+            if(data.capa) document.getElementById('headerLoja').style.backgroundImage = `url('${data.capa}')`;
+            carregarProdutos();
+        } else {
+            document.querySelector('.folha').innerHTML = "<h1 style='text-align:center; padding:50px'>Loja não encontrada.</h1>";
+        }
+    });
+
+    // 3. CARREGAR PRODUTOS
+    function carregarProdutos() {
+        onValue(ref(db, `lojas/${LOJA_ID}/produtos`), (snapshot) => {
+            const container = document.getElementById('conteudo');
+            container.innerHTML = "";
+            const dados = snapshot.val();
+
+            if (!dados) {
+                container.innerHTML = "<p style='text-align:center; padding:50px'>Nenhuma oferta no momento.</p>";
+                return;
+            }
+
+            const categorias = {};
+            Object.values(dados).forEach(p => {
+                const cat = p.cat || "Geral";
+                if(!categorias[cat]) categorias[cat] = [];
+                categorias[cat].push(p);
+            });
+
+            for(const [cat, itens] of Object.entries(categorias)) {
+                container.innerHTML += `<div class="faixa">${cat}</div>`;
+                let html = `<div class="grid">`;
+                
+                itens.forEach(p => {
+                    const preco = p.preco.toFixed(2).replace('.', ',');
+                    const mensagem = `Olá *${NOME_LOJA}*! Vi o produto *${p.nome}* por R$ ${preco} no catálogo e tenho interesse.`;
+                    const linkZap = ZAP_LOJA ? `https://wa.me/${ZAP_LOJA}?text=${encodeURIComponent(mensagem)}` : "#";
+                    
+                    html += `
+                        <div class="card">
+                            <img src="${p.img}" loading="lazy" alt="${p.nome}">
+                            <div class="nome">${p.nome}</div>
+                            <div><span class="preco">R$ ${preco}</span></div>
+                            <a href="${linkZap}" target="_blank" class="btn">COMPRAR 🛒</a>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+                container.innerHTML += html;
+            }
+        });
+    }
+</script>
+</body>
+</html>
