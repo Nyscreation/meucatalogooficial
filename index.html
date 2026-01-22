@@ -3,55 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Criar Catálogo Digital</title>
+    <title>Criar Loja Virtual</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; box-sizing: border-box; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: #0f172a; color: white; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
         
-        .container { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); padding: 40px 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .container { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); padding: 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
         
-        h1 { font-size: 2rem; margin-bottom: 10px; background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        p { color: #94a3b8; margin-bottom: 30px; line-height: 1.5; }
+        h1 { font-size: 1.8rem; margin: 0 0 10px 0; text-align: center; background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        p.sub { color: #94a3b8; text-align: center; margin-bottom: 30px; font-size: 0.9rem; }
         
-        .input-group { text-align: left; margin-bottom: 15px; }
+        /* INPUTS */
+        .input-group { margin-bottom: 15px; }
         label { font-size: 0.8rem; font-weight: 600; color: #cbd5e1; margin-left: 5px; display: block; margin-bottom: 5px; }
         input { width: 100%; padding: 16px; border-radius: 12px; border: 1px solid #334155; background: #1e293b; color: white; font-size: 1rem; outline: none; transition: 0.3s; box-sizing: border-box; }
         input:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2); }
         
-        button { width: 100%; padding: 18px; background: #3b82f6; color: white; border: none; font-size: 1rem; font-weight: 800; border-radius: 12px; cursor: pointer; margin-top: 20px; transition: transform 0.2s, background 0.2s; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3); }
-        button:active { transform: scale(0.98); }
+        /* PLANOS */
+        .planos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; }
+        .plano-card { background: #1e293b; border: 2px solid #334155; border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; }
+        .plano-card:hover { border-color: #475569; }
+        .plano-card.selected { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
         
-        .slug-preview { margin-top: 20px; font-size: 0.8rem; color: #64748b; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; word-break: break-all; }
+        .plano-nome { font-size: 0.9rem; color: #94a3b8; font-weight: bold; text-transform: uppercase; }
+        .plano-preco { font-size: 1.4rem; font-weight: 800; color: white; margin: 5px 0; }
+        .plano-periodo { font-size: 0.75rem; color: #64748b; }
+        .check-icon { position: absolute; top: -10px; right: -10px; background: #3b82f6; color: white; border-radius: 50%; padding: 4px; display: none; }
+        .plano-card.selected .check-icon { display: block; }
+
+        /* BUTTON */
+        button { width: 100%; padding: 18px; background: #25D366; color: white; border: none; font-size: 1rem; font-weight: 800; border-radius: 12px; cursor: pointer; transition: transform 0.2s; box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2); display: flex; align-items: center; justify-content: center; gap: 10px; }
+        button:active { transform: scale(0.98); }
+        button:hover { background: #1ebc57; }
+
+        .footer-link { margin-top: 20px; text-align: center; font-size: 0.85rem; }
+        .footer-link a { color: #60a5fa; text-decoration: none; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <h1>Crie sua Loja</h1>
-        <p>Tenha seu catálogo online e receba pedidos no WhatsApp em segundos.</p>
+        <p class="sub">Venda pelo WhatsApp em segundos.</p>
         
         <div class="input-group">
             <label>Nome do Negócio</label>
-            <input type="text" id="nomeLoja" placeholder="Ex: Burguer King">
+            <input type="text" id="nomeLoja" placeholder="Ex: Hamburgueria Top">
         </div>
         
         <div class="input-group">
-            <label>WhatsApp (DDD + Número)</label>
-            <input type="tel" id="zapLoja" placeholder="Ex: 5511999999999">
+            <label>Seu WhatsApp</label>
+            <input type="tel" id="zapLoja" placeholder="DDD + Número">
         </div>
 
-        <button onclick="criarLoja()">INICIAR GRÁTIS 🚀</button>
+        <label style="margin-bottom: 10px;">Escolha seu Pacote:</label>
+        <div class="planos-grid">
+            <div class="plano-card selected" onclick="selectPlan('mensal', 59.90)" id="card-mensal">
+                <i class='bx bx-check check-icon'></i>
+                <div class="plano-nome">Mensal</div>
+                <div class="plano-preco">R$ 59,90</div>
+                <div class="plano-periodo">cobrado todo mês</div>
+            </div>
+
+            <div class="plano-card" onclick="selectPlan('anual', 249.90)" id="card-anual">
+                <i class='bx bx-check check-icon'></i>
+                <div class="plano-nome">Anual</div>
+                <div class="plano-preco">R$ 249,90</div>
+                <div class="plano-periodo">economize 65%</div>
+            </div>
+        </div>
+
+        <button onclick="contratar()">
+            <i class='bx bxl-whatsapp' style="font-size: 1.4rem;"></i> CONTRATAR AGORA
+        </button>
         
-        <div class="slug-preview">
-            seusite.com/<b id="slugPreview">...</b>
+        <div class="footer-link">
+            Já tem uma loja? <a href="#" onclick="irParaLogin()">Entrar no Painel</a>
         </div>
     </div>
 
     <script type="module">
         import { db, ref, set, get } from './firebase-config.js';
 
-        const inputNome = document.getElementById('nomeLoja');
-        
+        let selectedPlan = 'mensal';
+        let selectedPrice = 59.90;
+
+        window.selectPlan = (plan, price) => {
+            selectedPlan = plan;
+            selectedPrice = price;
+            
+            // Visual update
+            document.querySelectorAll('.plano-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById(`card-${plan}`).classList.add('selected');
+        }
+
+        window.irParaLogin = () => {
+             const nome = document.getElementById('nomeLoja').value;
+             if(nome) {
+                 window.location.href = `admin.html?id=${criarSlug(nome)}`;
+             } else {
+                 alert("Digite o nome da sua loja para entrar.");
+             }
+        }
+
         function criarSlug(texto) {
             return texto.toString().toLowerCase()
                 .normalize('NFD').replace(/[\u0300-\u036f]/g, "")
@@ -60,32 +115,45 @@
                 .replace(/\-\-+/g, '-');
         }
 
-        inputNome.addEventListener('input', () => {
-            document.getElementById('slugPreview').innerText = criarSlug(inputNome.value);
-        });
-
-        window.criarLoja = async () => {
-            const nome = inputNome.value;
+        window.contratar = async () => {
+            const nome = document.getElementById('nomeLoja').value;
             const zap = document.getElementById('zapLoja').value;
             const slug = criarSlug(nome);
 
-            if(!nome || !zap) return alert("Preencha todos os campos!");
+            if(!nome || !zap) return alert("Preencha o nome e o WhatsApp!");
 
             const lojaRef = ref(db, 'lojas/' + slug);
             const snapshot = await get(lojaRef);
 
-            if(snapshot.exists()) {
-                alert("Este nome de loja já existe. Tente outro.");
-                return;
+            // GERA UM CÓDIGO DE 4 DÍGITOS ALEATÓRIO PARA ESSA LOJA
+            const codigoAtivacao = Math.floor(1000 + Math.random() * 9000).toString();
+
+            if(!snapshot.exists()) {
+                // Cria a loja BLOQUEADA
+                await set(lojaRef, {
+                    config: { 
+                        nome: nome, 
+                        zap: zap, 
+                        status: "pendente", // STATUS DE BLOQUEIO
+                        codigo_secreto: codigoAtivacao, // CÓDIGO QUE VOCÊ VAI VER NO MASTER
+                        plano_escolhido: selectedPlan,
+                        validade: new Date().toISOString() // Data vencida
+                    },
+                    produtos: {}
+                });
             }
 
-            await set(lojaRef, {
-                config: { nome, zap, endereco: "", capa: "" },
-                produtos: {}
-            });
-
-            // Redireciona para o novo admin estilo APP
-            window.location.href = `admin.html?id=${slug}`;
+            // Redireciona para o seu WhatsApp
+            const seuNumero = "5597984431811"; // SEU NÚMERO AQUI
+            const msg = `Olá! Quero ativar a loja *${nome}* no plano *${selectedPlan.toUpperCase()}* (R$ ${selectedPrice.toFixed(2)}). Aguardo a chave de acesso.`;
+            
+            // Abre o zap
+            window.open(`https://wa.me/${seuNumero}?text=${encodeURIComponent(msg)}`, '_blank');
+            
+            // Redireciona o usuário para o admin (onde ele vai dar de cara com o bloqueio)
+            setTimeout(() => {
+                window.location.href = `admin.html?id=${slug}`;
+            }, 1000);
         }
     </script>
 </body>
