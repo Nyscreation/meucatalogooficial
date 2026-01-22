@@ -8,22 +8,41 @@
     <style>
         body { background: #1a1a1a; font-family: 'Roboto', sans-serif; margin: 0; min-height: 100vh; display: flex; justify-content: center; }
         .folha { background: white; width: 100%; max-width: 600px; min-height: 100vh; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        
+        /* HEADER */
         header { background-color: #dc2626; background-size: cover; background-position: center; position: relative; color: white; padding: 40px 20px; text-align: center; border-bottom: 8px solid #facc15; }
         .overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 1; }
         .header-content { position: relative; z-index: 2; }
         h1 { font-family: 'Anton'; font-size: 2.8rem; margin: 0; line-height: 1; text-transform: uppercase; text-shadow: 2px 2px 5px black; }
         .sub { font-size: 1.1rem; margin-top: 10px; font-weight: bold; text-shadow: 1px 1px 3px black; }
+        
+        /* GRID */
         .faixa { background: black; color: #facc15; font-family: 'Anton'; text-align: center; font-size: 1.5rem; padding: 8px; margin: 20px auto; width: 90%; transform: skewX(-10deg); text-transform: uppercase; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 10px; }
+        
+        /* CARD */
         .card { border: 1px solid #ddd; padding: 10px; text-align: center; display: flex; flex-direction: column; }
-        .card img { width: 100%; height: 140px; object-fit: contain; margin-bottom: 10px; }
+        .card img { width: 100%; height: 140px; object-fit: contain; margin-bottom: 10px; cursor: zoom-in; transition: transform 0.2s; }
+        .card img:active { transform: scale(0.95); }
+        
         .nome { font-weight: 700; height: 2.4em; overflow: hidden; color: #333; font-size: 0.9rem; }
         .preco { background: #facc15; color: black; font-family: 'Anton'; font-size: 1.5rem; padding: 5px; transform: rotate(-2deg); margin: 5px auto; display: inline-block; border: 1px dashed black; }
         .cod-ref { font-size: 0.7rem; color: #999; margin-bottom: 5px; font-family: monospace; }
         .btn { background: #16a34a; color: white; text-decoration: none; padding: 10px; font-weight: bold; border-radius: 4px; margin-top: auto; display: block; }
+
+        /* --- ESTILO DO MODAL DE ZOOM (NOVO) --- */
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
+        .modal-content { max-width: 90%; max-height: 80vh; border-radius: 8px; box-shadow: 0 0 20px rgba(255,255,255,0.2); animation: zoom 0.3s; }
+        .close-btn { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; font-weight: bold; cursor: pointer; user-select: none; }
+        @keyframes zoom { from {transform:scale(0.5); opacity:0} to {transform:scale(1); opacity:1} }
     </style>
 </head>
 <body>
+
+    <div id="modalZoom" class="modal" onclick="fecharZoom()">
+        <span class="close-btn">&times;</span>
+        <img class="modal-content" id="imgZoom">
+    </div>
 
     <div class="folha">
         <header id="headerLoja">
@@ -50,6 +69,18 @@
 
     let ZAP_LOJA = ""; 
     let NOME_LOJA = "";
+
+    // --- FUNÇÕES DE ZOOM (NOVAS) ---
+    window.verImagem = (src) => {
+        const modal = document.getElementById('modalZoom');
+        const img = document.getElementById('imgZoom');
+        img.src = src;
+        modal.style.display = "flex";
+    }
+
+    window.fecharZoom = () => {
+        document.getElementById('modalZoom').style.display = "none";
+    }
 
     const configRef = ref(db, `lojas/${LOJA_ID}/config`);
     
@@ -101,15 +132,15 @@
                 let html = `<div class="grid">`;
                 itens.forEach(p => {
                     const preco = p.preco.toFixed(2).replace('.', ',');
-                    const cod = p.codigo || "---"; // Pega o código
+                    const cod = p.codigo || "---"; 
                     
-                    // --- MENSAGEM COM O CÓDIGO ---
                     const mensagem = `Olá *${NOME_LOJA}*! Vi o produto *${p.nome}* (Cód: *${cod}*) por R$ ${preco} no catálogo e tenho interesse.`;
                     const linkZap = ZAP_LOJA ? `https://wa.me/${ZAP_LOJA}?text=${encodeURIComponent(mensagem)}` : "#";
                     
+                    // Adicionado onclick na imagem
                     html += `
                         <div class="card">
-                            <img src="${p.img}" loading="lazy" alt="${p.nome}">
+                            <img src="${p.img}" loading="lazy" alt="${p.nome}" onclick="verImagem('${p.img}')">
                             <div class="nome">${p.nome}</div>
                             <div class="cod-ref">Cód: ${cod}</div>
                             <div><span class="preco">R$ ${preco}</span></div>
