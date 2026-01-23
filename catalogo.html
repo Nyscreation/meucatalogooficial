@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
     <meta property="og:title" content="📦 Acesse nosso Catálogo Digital">
     <meta property="og:description" content="Clique para ver fotos, preços e fazer seu pedido online agora mesmo!">
     <meta property="og:image" content="https://www.nyscreation.com/logo.png">
@@ -14,16 +11,43 @@
     <meta property="og:type" content="website">
 
     <title>Catálogo</title>
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { background: #1a1a1a; font-family: 'Roboto', sans-serif; margin: 0; min-height: 100vh; display: flex; justify-content: center; }
+        /* OTIMIZAÇÃO 1: Fontes de Sistema (Carregamento Zero) */
+        /* 'Anton' substituída por Impact/Arial Black */
+        /* 'Roboto' substituída por fontes padrão do sistema */
+        
+        body { 
+            background: #1a1a1a; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            min-height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+        }
+
         .folha { background: white; width: 100%; max-width: 600px; min-height: 100vh; display: flex; flex-direction: column; }
         
-        /* Ajuste no Header e Endereço */
-        header { background-color: #dc2626; background-size: cover; background-position: center; padding: 40px 20px; text-align: center; border-bottom: 8px solid #facc15; color:white; }
-        h1 { font-family: 'Anton'; font-size: 2.8rem; margin: 0; text-transform: uppercase; text-shadow: 2px 2px 5px black; }
+        header { 
+            background-color: #dc2626; 
+            background-size: cover; 
+            background-position: center; 
+            padding: 40px 20px; 
+            text-align: center; 
+            border-bottom: 8px solid #facc15; 
+            color: white; 
+        }
+
+        h1 { 
+            font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; /* Visual similar ao Anton */
+            font-size: 2.8rem; 
+            margin: 0; 
+            text-transform: uppercase; 
+            text-shadow: 2px 2px 5px black; 
+            letter-spacing: 1px;
+        }
         
-        /* NOVA REGRA: Endereço com fundo preto 50% */
+        /* SEU AJUSTE: Endereço com fundo preto 50% */
         #txtEnd { 
             background-color: rgba(0, 0, 0, 0.5); 
             display: inline-block; 
@@ -31,27 +55,48 @@
             border-radius: 20px; 
             margin-top: 10px;
             font-size: 0.9rem;
-            backdrop-filter: blur(2px); /* Efeito de vidro opcional */
+            backdrop-filter: blur(2px);
         }
 
-        .faixa { background: black; color: #facc15; font-family: 'Anton'; text-align: center; font-size: 1.5rem; padding: 8px; margin: 20px auto; width: 90%; transform: skewX(-10deg); }
+        .faixa { 
+            background: black; 
+            color: #facc15; 
+            font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; 
+            text-align: center; 
+            font-size: 1.5rem; 
+            padding: 8px; 
+            margin: 20px auto; 
+            width: 90%; 
+            transform: skewX(-10deg); 
+        }
+
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 10px; }
         .card { border: 1px solid #ddd; padding: 10px; text-align: center; display: flex; flex-direction: column; background: white; border-radius: 8px; }
         
-        /* NOVA REGRA: Imagem preenchendo espaço */
+        /* SEU AJUSTE: Imagem preenchendo espaço */
         .card img { 
             width: 100%; 
-            height: 160px; /* Aumentei um pouco */
-            object-fit: cover; /* Isso faz preencher tudo */
+            height: 160px; 
+            object-fit: cover; 
             margin-bottom: 10px; 
             cursor: zoom-in; 
             border-radius: 4px;
+            background-color: #f0f0f0; /* Fundo cinza enquanto carrega */
         }
         
-        .preco { background: #facc15; color: black; font-family: 'Anton'; font-size: 1.5rem; padding: 5px; transform: rotate(-2deg); margin: 5px auto; display: inline-block; }
+        .preco { 
+            background: #facc15; 
+            color: black; 
+            font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; 
+            font-size: 1.5rem; 
+            padding: 5px; 
+            transform: rotate(-2deg); 
+            margin: 5px auto; 
+            display: inline-block; 
+        }
+
         .btn { background: #16a34a; color: white; text-decoration: none; padding: 10px; font-weight: bold; border-radius: 4px; display: block; }
         
-        /* MODAL DE ZOOM */
         .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
         .modal-content { max-width: 90%; max-height: 80vh; border-radius: 8px; box-shadow: 0 0 20px rgba(255,255,255,0.5); }
     </style>
@@ -75,50 +120,60 @@
     window.verImagem = (src) => { document.getElementById('imgZoom').src = src; document.getElementById('modalZoom').style.display = "flex"; }
 
     let ZAP = ""; let NOME = "";
+    
+    // 1. CARREGAMENTO DOS DADOS DA LOJA
     onValue(ref(db, `lojas/${LOJA_ID}/config`), (snap) => {
         const d = snap.val();
         if(d) {
-            if(d.status === 'pendente' || new Date() > new Date(d.validade)) { document.body.innerHTML = "<h1 style='text-align:center;padding:50px'>Loja Indisponível</h1>"; return; }
+            if(d.status === 'pendente' || new Date() > new Date(d.validade)) { document.body.innerHTML = "<h1 style='text-align:center;padding:50px;color:white;'>Loja Indisponível</h1>"; return; }
             NOME = d.nome; ZAP = d.zap;
             
-            // ATUALIZA TÍTULO DA ABA DINAMICAMENTE
             document.title = NOME + " | Catálogo";
-            
             document.getElementById('txtNome').innerText = NOME;
             document.getElementById('txtEnd').innerText = d.endereco || "";
             if(d.capa) document.getElementById('headerLoja').style.backgroundImage = `url('${d.capa}')`;
+            
             carregarProdutos();
         }
     });
 
+    // 2. CARREGAMENTO DOS PRODUTOS (OTIMIZADO)
     function carregarProdutos() {
         onValue(ref(db, `lojas/${LOJA_ID}/produtos`), (snap) => {
-            const c = document.getElementById('conteudo'); c.innerHTML = "";
+            const container = document.getElementById('conteudo');
             const d = snap.val();
-            if(!d) { c.innerHTML = "<p style='text-align:center'>Vazio.</p>"; return; }
+            
+            if(!d) { container.innerHTML = "<p style='text-align:center; padding:20px;'>Nenhum produto cadastrado.</p>"; return; }
             
             const cats = {};
             Object.values(d).forEach(p => { if(!cats[p.cat]) cats[p.cat] = []; cats[p.cat].push(p); });
 
+            // BUFFER: Cria todo o HTML na memória antes de jogar na tela (Muito mais rápido)
+            let htmlFinal = "";
+
             for(const [k, v] of Object.entries(cats)) {
-                c.innerHTML += `<div class="faixa">${k}</div>`;
-                let html = `<div class="grid">`;
+                htmlFinal += `<div class="faixa">${k}</div><div class="grid">`;
+                
                 v.forEach(p => {
                     const link = ZAP ? `https://wa.me/${ZAP}?text=${encodeURIComponent(`Olá ${NOME}! Quero: ${p.nome} (Cód: ${p.codigo})`)}` : "#";
-                    
-                    // LÓGICA DE FORMATAÇÃO DE PREÇO (R$ 10,00)
                     const precoFormatado = parseFloat(p.preco).toFixed(2).replace('.', ',');
 
-                    html += `<div class="card">
-                                <img src="${p.img}" onclick="verImagem('${p.img}')">
-                                <strong>${p.nome}</strong>
-                                <small>Cód: ${p.codigo}</small>
-                                <div class="preco">R$ ${precoFormatado}</div>
-                                <a href="${link}" target="_blank" class="btn">COMPRAR</a>
-                             </div>`;
+                    // OTIMIZAÇÃO 2: loading="lazy" nas imagens
+                    htmlFinal += `
+                    <div class="card">
+                        <img src="${p.img}" loading="lazy" onclick="verImagem('${p.img}')">
+                        <strong>${p.nome}</strong>
+                        <small>Cód: ${p.codigo}</small>
+                        <div class="preco">R$ ${precoFormatado}</div>
+                        <a href="${link}" target="_blank" class="btn">COMPRAR</a>
+                    </div>`;
                 });
-                c.innerHTML += html + `</div>`;
+                
+                htmlFinal += `</div>`;
             }
+            
+            // Joga tudo na tela de uma vez só
+            container.innerHTML = htmlFinal;
         });
     }
 </script>
