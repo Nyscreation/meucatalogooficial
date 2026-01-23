@@ -1,8 +1,9 @@
-const CACHE_NAME = 'painel-gestor-v3';
+const CACHE_NAME = 'painel-gestor-v6';
 const urlsToCache = [
   './',
   './admin.html',
   './index.html',
+  './catalogo.html',
   './manifest.json',
   './logo.png'
 ];
