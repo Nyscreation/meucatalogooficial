@@ -28,7 +28,6 @@
         h1 { font-size: 2rem; margin: 0 0 10px 0; background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         p.sub { color: #94a3b8; margin-bottom: 30px; font-size: 0.9rem; }
         
-        /* INPUTS ESTILO VIDRO */
         .input-group { margin-bottom: 15px; text-align: left; }
         label { font-size: 0.8rem; font-weight: 600; color: #cbd5e1; margin-left: 5px; display: block; margin-bottom: 5px; }
         input { 
@@ -39,7 +38,6 @@
         }
         input:focus { border-color: #60a5fa; background: rgba(0,0,0,0.5); }
         
-        /* CARDS DE PLANO */
         .planos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; }
         .plano-card { 
             background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.05); 
@@ -54,7 +52,6 @@
         .check-icon { position: absolute; top: -8px; right: -8px; background: #3b82f6; color: white; border-radius: 50%; padding: 2px; display: none; font-size: 1.2rem; }
         .plano-card.selected .check-icon { display: block; }
 
-        /* BOTÃO */
         button { 
             width: 100%; padding: 18px; background: #3b82f6; color: white; border: none; 
             font-size: 1rem; font-weight: 800; border-radius: 12px; cursor: pointer; 
@@ -64,7 +61,6 @@
         button:active { transform: scale(0.98); }
         button:disabled { opacity: 0.7; cursor: wait; }
 
-        /* RELOGIN AUTOMÁTICO */
         #autoLoginBox { display: none; margin-bottom: 20px; animation: fadeIn 0.5s; }
         .btn-retornar { background: #10b981; margin-bottom: 10px; }
         .link-sair { color: #f87171; font-size: 0.8rem; text-decoration: underline; cursor: pointer; }
@@ -126,7 +122,7 @@
     <script type="module">
         import { db, ref, set, get } from './firebase-config.js';
 
-        // VERIFICA SE JÁ TEM LOJA SALVA NO CELULAR
+        // VERIFICA SE JÁ TEM LOJA SALVA
         const savedId = localStorage.getItem('minha_loja_id');
         if (savedId) {
             document.getElementById('autoLoginBox').style.display = 'block';
@@ -144,16 +140,38 @@
             }
         }
 
-        window.loginManual = () => {
+        // ===========================================
+        // 🔒 SEGURANÇA: VERIFICA SE A LOJA EXISTE
+        // ===========================================
+        window.loginManual = async () => {
             const nome = prompt("Qual o nome da sua loja (ID)?");
             if(nome) {
                 const slug = criarSlug(nome);
-                localStorage.setItem('minha_loja_id', slug);
-                window.location.href = `admin.html?id=${slug}`;
+                
+                // --- CHECAGEM DE SEGURANÇA ---
+                // Mostra um carregando básico no cursor
+                document.body.style.cursor = 'wait';
+                
+                try {
+                    const lojaRef = ref(db, 'lojas/' + slug);
+                    const snapshot = await get(lojaRef);
+
+                    if (snapshot.exists()) {
+                        // LOJA EXISTE: Permite entrar
+                        localStorage.setItem('minha_loja_id', slug);
+                        window.location.href = `admin.html?id=${slug}`;
+                    } else {
+                        // LOJA NÃO EXISTE: Barra o acesso
+                        alert("❌ Loja não encontrada!\nVerifique se digitou o nome corretamente ou crie uma nova conta.");
+                    }
+                } catch(e) {
+                    alert("Erro de conexão. Tente novamente.");
+                } finally {
+                    document.body.style.cursor = 'default';
+                }
             }
         }
 
-        // LÓGICA DE CRIAÇÃO
         let selectedPlan = 'mensal';
         let selectedPrice = 59.90;
 
@@ -187,7 +205,6 @@
                 const lojaRef = ref(db, 'lojas/' + slug);
                 const snapshot = await get(lojaRef);
 
-                // Se não existir, cria. Se existir, avisa.
                 if(!snapshot.exists()) {
                     const codigoAtivacao = Math.floor(1000 + Math.random() * 9000).toString();
                     
@@ -203,15 +220,12 @@
                         produtos: {}
                     });
                     
-                    // Salva no celular para não pedir login depois
                     localStorage.setItem('minha_loja_id', slug);
 
-                    // Zap Admin
                     const seuNumero = "5597984431811"; 
                     const msg = `Olá! Quero ativar a loja *${nome}* no plano *${selectedPlan.toUpperCase()}*. Aguardo a chave.`;
                     window.open(`https://wa.me/${seuNumero}?text=${encodeURIComponent(msg)}`, '_blank');
                     
-                    // Redireciona
                     setTimeout(() => {
                         window.location.href = `admin.html?id=${slug}`;
                     }, 1000);
