@@ -16,12 +16,17 @@
         .card img { width: 100%; height: 140px; object-fit: contain; margin-bottom: 10px; cursor: zoom-in; }
         .preco { background: #facc15; color: black; font-family: 'Anton'; font-size: 1.5rem; padding: 5px; transform: rotate(-2deg); margin: 5px auto; display: inline-block; }
         .btn { background: #16a34a; color: white; text-decoration: none; padding: 10px; font-weight: bold; border-radius: 4px; display: block; }
-        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
-        .modal-content { max-width: 90%; max-height: 80vh; }
+        
+        /* MODAL DE ZOOM */
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
+        .modal-content { max-width: 90%; max-height: 80vh; border-radius: 8px; box-shadow: 0 0 20px rgba(255,255,255,0.5); }
     </style>
 </head>
 <body>
-    <div id="modalZoom" class="modal" onclick="this.style.display='none'"><img class="modal-content" id="imgZoom"></div>
+    <div id="modalZoom" class="modal" onclick="this.style.display='none'">
+        <img class="modal-content" id="imgZoom">
+    </div>
+
     <div class="folha">
         <header id="headerLoja"><h1 id="txtNome">...</h1><div id="txtEnd">...</div></header>
         <div id="conteudo" style="padding-bottom: 50px;"></div>
