@@ -109,7 +109,7 @@
             <a href="#" id="linkLojaBtn" target="_blank" class="btn btn-outline" style="margin-bottom: 10px;"><i class='bx bx-link-external'></i> Abrir Catálogo</a>
             <button onclick="copiarLink()" class="btn btn-primary"><i class='bx bx-copy'></i> Copiar Link</button>
         </div>
-        <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">Versão 6.0 Turbo</div>
+        <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">Versão 7.0 Seguro</div>
     </div>
 
     <nav class="bottom-nav">
@@ -126,19 +126,16 @@
     let LOJA_ID = params.get('id');
 
     if (!LOJA_ID) {
-        // Se não tem ID na URL, tenta pegar do celular
         const savedId = localStorage.getItem('minha_loja_id');
         if (savedId) {
-            // Redireciona e para a execução para não carregar a tela errada
             window.location.href = `admin.html?id=${savedId}`;
             throw new Error("Redirecionando...");
         } else {
-            // Se não tem nada salvo, volta pro início
             window.location.href = "index.html";
         }
     } else {
-        // Se tem ID na URL, salva no celular para a próxima vez
-        localStorage.setItem('minha_loja_id', LOJA_ID);
+        // Se tem ID na URL, vamos tentar validar se existe antes de salvar
+        // Mas a validação principal ocorre no onValue abaixo
     }
 
     document.getElementById('displayId').innerText = LOJA_ID;
@@ -187,39 +184,50 @@
         } catch (error) { console.log(error); return null; }
     }
 
-    // === FIREBASE LOGIC ===
+    // === FIREBASE LOGIC (COM SEGURANÇA REFORÇADA) ===
     const configRef = ref(db, `lojas/${LOJA_ID}/config`);
     onValue(configRef, (snapshot) => {
         const data = snapshot.val();
-        if(data) {
-            if (data.status === "pendente") {
-                const MEU_PIX = "6485220a-c85c-4a83-a2b3-e3e230827e8c";
-                document.body.innerHTML = `
-                    <div style="height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; text-align:center; padding:20px;">
-                        <h1>Ativar Loja</h1><p style="color:#94a3b8;">Pagamento pendente.</p>
-                        <input type="number" id="inputCodigo" placeholder="0000" style="padding:15px; border-radius:10px; width:100%; text-align:center; margin-bottom:10px;">
-                        <button onclick="ativarLoja()" class="btn btn-primary">ATIVAR</button>
-                        <div style="margin-top:20px;">Pix: ${MEU_PIX}</div>
-                    </div>`;
-                window.ativarLoja = async () => {
-                    if(document.getElementById('inputCodigo').value == data.codigo_secreto) {
-                        const hoje = new Date();
-                        hoje.setDate(hoje.getDate() + (data.plano_escolhido === 'anual' ? 365 : 30));
-                        await set(configRef, { ...data, status: "ativo", validade: hoje.toISOString() });
-                        alert("✅ Ativado!"); window.location.reload();
-                    } else { alert("❌ Código inválido!"); }
-                }
-                return;
-            }
-            if(new Date() > (data.validade ? new Date(data.validade) : new Date())) {
-                document.body.innerHTML = "<h1 style='color:white;text-align:center;padding:50px'>VENCIDO</h1>"; return;
-            }
-            document.getElementById('confNome').value = data.nome || "";
-            document.getElementById('confEnd').value = data.endereco || "";
-            document.getElementById('confZap').value = data.zap || "";
-            document.getElementById('txtValidade').innerText = new Date(data.validade).toLocaleDateString('pt-BR');
-            if(data.capa) document.getElementById('previewCapa').src = data.capa;
+        
+        // 🔒 SEGURANÇA: Se não tem dados, a loja não existe!
+        if (!data) {
+            alert("⚠️ Acesso Negado: Esta loja não existe.\nVocê será redirecionado.");
+            localStorage.removeItem('minha_loja_id');
+            window.location.href = "index.html";
+            return;
+        } else {
+            // Sucesso! A loja existe, pode salvar no cache seguro
+            localStorage.setItem('minha_loja_id', LOJA_ID);
         }
+
+        // Lógica Normal
+        if (data.status === "pendente") {
+            const MEU_PIX = "calisthenysoficial@gmail.com";
+            document.body.innerHTML = `
+                <div style="height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; text-align:center; padding:20px;">
+                    <h1>Ativar Loja</h1><p style="color:#94a3b8;">Pagamento pendente.</p>
+                    <input type="number" id="inputCodigo" placeholder="0000" style="padding:15px; border-radius:10px; width:100%; text-align:center; margin-bottom:10px;">
+                    <button onclick="ativarLoja()" class="btn btn-primary">ATIVAR</button>
+                    <div style="margin-top:20px;">Pix: ${MEU_PIX}</div>
+                </div>`;
+            window.ativarLoja = async () => {
+                if(document.getElementById('inputCodigo').value == data.codigo_secreto) {
+                    const hoje = new Date();
+                    hoje.setDate(hoje.getDate() + (data.plano_escolhido === 'anual' ? 365 : 30));
+                    await set(configRef, { ...data, status: "ativo", validade: hoje.toISOString() });
+                    alert("✅ Ativado!"); window.location.reload();
+                } else { alert("❌ Código inválido!"); }
+            }
+            return;
+        }
+        if(new Date() > (data.validade ? new Date(data.validade) : new Date())) {
+            document.body.innerHTML = "<h1 style='color:white;text-align:center;padding:50px'>VENCIDO</h1>"; return;
+        }
+        document.getElementById('confNome').value = data.nome || "";
+        document.getElementById('confEnd').value = data.endereco || "";
+        document.getElementById('confZap').value = data.zap || "";
+        document.getElementById('txtValidade').innerText = new Date(data.validade).toLocaleDateString('pt-BR');
+        if(data.capa) document.getElementById('previewCapa').src = data.capa;
     });
 
     document.getElementById('btnSalvarConfig').addEventListener('click', async () => {
@@ -269,4 +277,3 @@
 </script>
 </body>
 </html>
-
