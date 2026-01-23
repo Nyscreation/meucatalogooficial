@@ -3,152 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Digital</title>
+    <title>Catálogo</title>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { background: #1a1a1a; font-family: 'Roboto', sans-serif; margin: 0; min-height: 100vh; display: flex; justify-content: center; }
-        .folha { background: white; width: 100%; max-width: 600px; min-height: 100vh; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-        
-        /* HEADER */
-        header { background-color: #dc2626; background-size: cover; background-position: center; position: relative; color: white; padding: 40px 20px; text-align: center; border-bottom: 8px solid #facc15; }
-        .overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 1; }
-        .header-content { position: relative; z-index: 2; }
-        h1 { font-family: 'Anton'; font-size: 2.8rem; margin: 0; line-height: 1; text-transform: uppercase; text-shadow: 2px 2px 5px black; }
-        .sub { font-size: 1.1rem; margin-top: 10px; font-weight: bold; text-shadow: 1px 1px 3px black; }
-        
-        /* GRID */
-        .faixa { background: black; color: #facc15; font-family: 'Anton'; text-align: center; font-size: 1.5rem; padding: 8px; margin: 20px auto; width: 90%; transform: skewX(-10deg); text-transform: uppercase; }
+        .folha { background: white; width: 100%; max-width: 600px; min-height: 100vh; display: flex; flex-direction: column; }
+        header { background-color: #dc2626; background-size: cover; padding: 40px 20px; text-align: center; border-bottom: 8px solid #facc15; color:white; }
+        h1 { font-family: 'Anton'; font-size: 2.8rem; margin: 0; text-transform: uppercase; text-shadow: 2px 2px 5px black; }
+        .faixa { background: black; color: #facc15; font-family: 'Anton'; text-align: center; font-size: 1.5rem; padding: 8px; margin: 20px auto; width: 90%; transform: skewX(-10deg); }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 10px; }
-        
-        /* CARD */
         .card { border: 1px solid #ddd; padding: 10px; text-align: center; display: flex; flex-direction: column; }
-        .card img { width: 100%; height: 140px; object-fit: contain; margin-bottom: 10px; cursor: zoom-in; transition: transform 0.2s; }
-        .card img:active { transform: scale(0.95); }
-        
-        .nome { font-weight: 700; height: 2.4em; overflow: hidden; color: #333; font-size: 0.9rem; }
-        .preco { background: #facc15; color: black; font-family: 'Anton'; font-size: 1.5rem; padding: 5px; transform: rotate(-2deg); margin: 5px auto; display: inline-block; border: 1px dashed black; }
-        .cod-ref { font-size: 0.7rem; color: #999; margin-bottom: 5px; font-family: monospace; }
-        .btn { background: #16a34a; color: white; text-decoration: none; padding: 10px; font-weight: bold; border-radius: 4px; margin-top: auto; display: block; }
-
-        /* --- ESTILO DO MODAL DE ZOOM (NOVO) --- */
-        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
-        .modal-content { max-width: 90%; max-height: 80vh; border-radius: 8px; box-shadow: 0 0 20px rgba(255,255,255,0.2); animation: zoom 0.3s; }
-        .close-btn { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; font-weight: bold; cursor: pointer; user-select: none; }
-        @keyframes zoom { from {transform:scale(0.5); opacity:0} to {transform:scale(1); opacity:1} }
+        .card img { width: 100%; height: 140px; object-fit: contain; margin-bottom: 10px; cursor: zoom-in; }
+        .preco { background: #facc15; color: black; font-family: 'Anton'; font-size: 1.5rem; padding: 5px; transform: rotate(-2deg); margin: 5px auto; display: inline-block; }
+        .btn { background: #16a34a; color: white; text-decoration: none; padding: 10px; font-weight: bold; border-radius: 4px; display: block; }
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
+        .modal-content { max-width: 90%; max-height: 80vh; }
     </style>
 </head>
 <body>
-
-    <div id="modalZoom" class="modal" onclick="fecharZoom()">
-        <span class="close-btn">&times;</span>
-        <img class="modal-content" id="imgZoom">
-    </div>
-
+    <div id="modalZoom" class="modal" onclick="this.style.display='none'"><img class="modal-content" id="imgZoom"></div>
     <div class="folha">
-        <header id="headerLoja">
-            <div class="overlay"></div>
-            <div class="header-content">
-                <h1 id="txtNome">CARREGANDO...</h1>
-                <div class="sub" id="txtEnd">...</div>
-            </div>
-        </header>
-
-        <div id="conteudo" style="padding-bottom: 50px; flex: 1;">
-            <p style="text-align:center; padding:50px; color:#666">Buscando ofertas...</p>
-        </div>
-        <div style="text-align: center; padding: 20px; font-size: 0.8rem; color: #999; border-top: 1px solid #eee;">Catálogo Digital</div>
+        <header id="headerLoja"><h1 id="txtNome">...</h1><div id="txtEnd">...</div></header>
+        <div id="conteudo" style="padding-bottom: 50px;"></div>
     </div>
-
 <script type="module">
     import { db, ref, onValue } from './firebase-config.js';
-
     const params = new URLSearchParams(window.location.search);
     const LOJA_ID = params.get('id');
+    if (!LOJA_ID) window.location.href = "index.html";
 
-    if (!LOJA_ID) { alert("Loja não encontrada!"); window.location.href = "index.html"; }
+    window.verImagem = (src) => { document.getElementById('imgZoom').src = src; document.getElementById('modalZoom').style.display = "flex"; }
 
-    let ZAP_LOJA = ""; 
-    let NOME_LOJA = "";
-
-    // --- FUNÇÕES DE ZOOM (NOVAS) ---
-    window.verImagem = (src) => {
-        const modal = document.getElementById('modalZoom');
-        const img = document.getElementById('imgZoom');
-        img.src = src;
-        modal.style.display = "flex";
-    }
-
-    window.fecharZoom = () => {
-        document.getElementById('modalZoom').style.display = "none";
-    }
-
-    const configRef = ref(db, `lojas/${LOJA_ID}/config`);
-    
-    onValue(configRef, (snapshot) => {
-        const data = snapshot.val();
-        
-        if(data) {
-            const validade = data.validade ? new Date(data.validade) : new Date();
-            const agora = new Date();
-            
-            if (data.status === "pendente" || agora > validade) {
-                document.body.innerHTML = `
-                    <div style="height:100vh; display:flex; justify-content:center; align-items:center; flex-direction:column; text-align:center; font-family:sans-serif; background:#eee;">
-                        <h1 style="color:#666">🏪 Loja Indisponível</h1>
-                        <p>O catálogo está em manutenção ou aguardando ativação.</p>
-                    </div>`;
-                return;
-            }
-
-            NOME_LOJA = data.nome || "Loja";
-            ZAP_LOJA = data.zap || "";
-            document.getElementById('txtNome').innerText = NOME_LOJA;
-            document.getElementById('txtEnd').innerText = data.endereco || "";
-            
-            if(data.capa) document.getElementById('headerLoja').style.backgroundImage = `url('${data.capa}')`;
+    let ZAP = ""; let NOME = "";
+    onValue(ref(db, `lojas/${LOJA_ID}/config`), (snap) => {
+        const d = snap.val();
+        if(d) {
+            if(d.status === 'pendente' || new Date() > new Date(d.validade)) { document.body.innerHTML = "<h1 style='text-align:center;padding:50px'>Loja Indisponível</h1>"; return; }
+            NOME = d.nome; ZAP = d.zap;
+            document.getElementById('txtNome').innerText = NOME;
+            document.getElementById('txtEnd').innerText = d.endereco || "";
+            if(d.capa) document.getElementById('headerLoja').style.backgroundImage = `url('${d.capa}')`;
             carregarProdutos();
-        } else {
-            document.querySelector('.folha').innerHTML = "<h1 style='text-align:center; padding:50px'>Loja não existe.</h1>";
         }
     });
 
     function carregarProdutos() {
-        onValue(ref(db, `lojas/${LOJA_ID}/produtos`), (snapshot) => {
-            const container = document.getElementById('conteudo');
-            container.innerHTML = "";
-            const dados = snapshot.val();
+        onValue(ref(db, `lojas/${LOJA_ID}/produtos`), (snap) => {
+            const c = document.getElementById('conteudo'); c.innerHTML = "";
+            const d = snap.val();
+            if(!d) { c.innerHTML = "<p style='text-align:center'>Vazio.</p>"; return; }
+            
+            const cats = {};
+            Object.values(d).forEach(p => { if(!cats[p.cat]) cats[p.cat] = []; cats[p.cat].push(p); });
 
-            if (!dados) { container.innerHTML = "<p style='text-align:center; padding:50px'>Nenhuma oferta no momento.</p>"; return; }
-
-            const categorias = {};
-            Object.values(dados).forEach(p => {
-                const cat = p.cat || "Geral";
-                if(!categorias[cat]) categorias[cat] = [];
-                categorias[cat].push(p);
-            });
-
-            for(const [cat, itens] of Object.entries(categorias)) {
-                container.innerHTML += `<div class="faixa">${cat}</div>`;
+            for(const [k, v] of Object.entries(cats)) {
+                c.innerHTML += `<div class="faixa">${k}</div>`;
                 let html = `<div class="grid">`;
-                itens.forEach(p => {
-                    const preco = p.preco.toFixed(2).replace('.', ',');
-                    const cod = p.codigo || "---"; 
-                    
-                    const mensagem = `Olá *${NOME_LOJA}*! Vi o produto *${p.nome}* (Cód: *${cod}*) por R$ ${preco} no catálogo e tenho interesse.`;
-                    const linkZap = ZAP_LOJA ? `https://wa.me/${ZAP_LOJA}?text=${encodeURIComponent(mensagem)}` : "#";
-                    
-                    // Adicionado onclick na imagem
-                    html += `
-                        <div class="card">
-                            <img src="${p.img}" loading="lazy" alt="${p.nome}" onclick="verImagem('${p.img}')">
-                            <div class="nome">${p.nome}</div>
-                            <div class="cod-ref">Cód: ${cod}</div>
-                            <div><span class="preco">R$ ${preco}</span></div>
-                            <a href="${linkZap}" target="_blank" class="btn">COMPRAR 🛒</a>
-                        </div>`;
+                v.forEach(p => {
+                    const link = ZAP ? `https://wa.me/${ZAP}?text=${encodeURIComponent(`Olá ${NOME}! Quero: ${p.nome} (Cód: ${p.codigo})`)}` : "#";
+                    html += `<div class="card"><img src="${p.img}" onclick="verImagem('${p.img}')"><strong>${p.nome}</strong><small>Cód: ${p.codigo}</small><div class="preco">R$ ${p.preco}</div><a href="${link}" target="_blank" class="btn">COMPRAR</a></div>`;
                 });
-                html += `</div>`;
-                container.innerHTML += html;
+                c.innerHTML += html + `</div>`;
             }
         });
     }
