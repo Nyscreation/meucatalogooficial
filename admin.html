@@ -121,21 +121,24 @@
 <script type="module">
     import { db, ref, push, set, onValue, remove, get } from './firebase-config.js';
 
-    // === AUTO-LOGIN E PERSISTÊNCIA ===
+    // ===============================================
+    // 🔒 1. AUTO-LOGIN E VERIFICAÇÃO INICIAL
+    // ===============================================
     const params = new URLSearchParams(window.location.search);
     let LOJA_ID = params.get('id');
 
+    // Se não tiver ID na URL, tenta pegar da memória do celular
     if (!LOJA_ID) {
         const savedId = localStorage.getItem('minha_loja_id');
         if (savedId) {
+            // Se achou salvo, redireciona para a loja certa
             window.location.href = `admin.html?id=${savedId}`;
-            throw new Error("Redirecionando...");
+            // Para a execução aqui para não carregar a tela vazia
+            throw new Error("Redirecionando para login salvo..."); 
         } else {
+            // Se não tem nada, manda criar conta
             window.location.href = "index.html";
         }
-    } else {
-        // Se tem ID na URL, vamos tentar validar se existe antes de salvar
-        // Mas a validação principal ocorre no onValue abaixo
     }
 
     document.getElementById('displayId').innerText = LOJA_ID;
@@ -165,6 +168,7 @@
     document.getElementById('linkLojaBtn').href = linkLoja;
     window.copiarLink = () => { navigator.clipboard.writeText(linkLoja); showToast("Link copiado!"); }
     
+    // Função de Sair: Limpa a memória do celular
     window.sair = () => { 
         if(confirm("Deseja sair e desconectar desta loja?")) {
             localStorage.removeItem('minha_loja_id');
@@ -184,25 +188,27 @@
         } catch (error) { console.log(error); return null; }
     }
 
-    // === FIREBASE LOGIC (COM SEGURANÇA REFORÇADA) ===
+    // ===============================================
+    // 🔥 2. FIREBASE LOGIC (COM BLINDAGEM)
+    // ===============================================
     const configRef = ref(db, `lojas/${LOJA_ID}/config`);
+    
     onValue(configRef, (snapshot) => {
         const data = snapshot.val();
         
-        // 🔒 SEGURANÇA: Se não tem dados, a loja não existe!
+        // 🔒 TRAVA DE SEGURANÇA: Se não tem dados, a loja não existe!
         if (!data) {
-            alert("⚠️ Acesso Negado: Esta loja não existe.\nVocê será redirecionado.");
-            localStorage.removeItem('minha_loja_id');
+            alert("⚠️ Acesso Negado: Esta loja não existe.\nVocê será redirecionado para criar uma nova.");
+            localStorage.removeItem('minha_loja_id'); // Limpa login inválido
             window.location.href = "index.html";
             return;
         } else {
-            // Sucesso! A loja existe, pode salvar no cache seguro
+            // Sucesso! A loja existe, salva no celular para a próxima vez
             localStorage.setItem('minha_loja_id', LOJA_ID);
         }
 
-        // Lógica Normal
         if (data.status === "pendente") {
-            const MEU_PIX = "calisthenysoficial@gmail.com";
+            const MEU_PIX = "6485220a-c85c-4a83-a2b3-e3e230827e8c";
             document.body.innerHTML = `
                 <div style="height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; text-align:center; padding:20px;">
                     <h1>Ativar Loja</h1><p style="color:#94a3b8;">Pagamento pendente.</p>
