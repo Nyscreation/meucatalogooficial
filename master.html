@@ -3,128 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel GOD MODE</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <title>Painel Mestre</title>
     <style>
-        body { font-family: 'Inter', sans-serif; background: #111827; color: white; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; background: #1f2937; border-radius: 8px; overflow: hidden; margin-top: 20px; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #374151; }
-        th { background: #374151; color: #9ca3af; font-size: 0.8rem; text-transform: uppercase; }
-        tr:hover { background: #2d3748; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
-        .bg-green { background: #059669; color: white; }
-        .bg-red { background: #dc2626; color: white; }
-        .bg-yellow { background: #d97706; color: white; }
-        .btn { border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-right: 5px; color: white; transition: 0.2s; }
-        .btn-renovar { background: #2563eb; }
-        .btn-del { background: #7f1d1d; }
-        #loginScreen { position: fixed; top:0; left:0; width:100%; height:100%; background: #000; z-index: 100; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-        input { padding: 10px; border-radius: 5px; border: none; margin-bottom: 10px; }
+        body { background: #111827; color: white; font-family: sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; background: #1f2937; }
+        th, td { padding: 10px; border-bottom: 1px solid #333; text-align: left; }
+        button { padding: 5px 10px; cursor: pointer; }
     </style>
 </head>
 <body>
-
-    <div id="loginScreen">
-        <h2>🔒 Acesso Restrito</h2>
-        <input type="password" id="senhaInput" placeholder="Digite a senha de admin">
-        <button onclick="verificarSenha()" class="btn btn-renovar">ENTRAR</button>
-    </div>
-
-    <div id="painel" style="display:none">
-        <h1>👑 Gerenciador de Lojas</h1>
-        <p>Total: <strong id="totalLojas">0</strong></p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Status</th>
-                    <th>ID da Loja</th>
-                    <th>Nome / Plano</th>
-                    <th>CÓDIGO SECRETO</th>
-                    <th>Vencimento</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody id="listaLojas">
-                <tr><td colspan="6" style="text-align:center">Carregando dados...</td></tr>
-            </tbody>
-        </table>
-    </div>
+    <input type="password" id="pass" placeholder="Senha"><button onclick="login()">Entrar</button>
+    <table id="tbl" style="margin-top:20px"></table>
 
 <script type="module">
     import { db, ref, onValue, set, remove, get } from './firebase-config.js';
 
-    window.verificarSenha = () => {
-        if(document.getElementById('senhaInput').value === "C@listhenys1994") {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('painel').style.display = 'block';
-            carregarLojas();
-        } else { alert("Senha incorreta!"); }
+    window.login = () => {
+        if(document.getElementById('pass').value === "C@listhenys1994") {
+            carregar();
+        } else alert("Senha errada");
     }
 
-    function carregarLojas() {
-        onValue(ref(db, 'lojas'), (snapshot) => {
-            const tbody = document.getElementById('listaLojas');
-            tbody.innerHTML = "";
-            const dados = snapshot.val();
-
-            if(!dados) { tbody.innerHTML = "<tr><td colspan='6'>Nada aqui.</td></tr>"; return; }
-            document.getElementById('totalLojas').innerText = Object.keys(dados).length;
-
-            Object.entries(dados).forEach(([id, loja]) => {
-                const conf = loja.config || {};
-                const validade = conf.validade ? new Date(conf.validade) : new Date(0);
-                const hoje = new Date();
-                
-                let statusBadge = "";
-                if (conf.status === "pendente") statusBadge = `<span class="badge bg-yellow">PENDENTE</span>`;
-                else if (validade < hoje) statusBadge = `<span class="badge bg-red">VENCIDO</span>`;
-                else statusBadge = `<span class="badge bg-green">ATIVO</span>`;
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${statusBadge}</td>
-                        <td style="font-family:monospace; color:#60a5fa">${id}</td>
+    function carregar() {
+        onValue(ref(db, 'lojas'), snap => {
+            const tbl = document.getElementById('tbl'); tbl.innerHTML = "<tr><th>Loja</th><th>Código</th><th>Ação</th></tr>";
+            const d = snap.val();
+            if(d) {
+                Object.entries(d).forEach(([k, v]) => {
+                    const c = v.config || {};
+                    tbl.innerHTML += `<tr>
+                        <td>${c.nome} (${c.plano_escolhido})<br><small>${k}</small></td>
+                        <td style="color:yellow;font-size:1.2rem">${c.codigo_secreto}</td>
                         <td>
-                            <strong>${conf.nome}</strong>
-                            <div style="font-size:0.8rem; color:#9ca3af">${conf.plano_escolhido || "-"}</div>
-                        </td>
-                        <td>
-                             <span style="font-family:monospace; background:#374151; padding:5px 10px; border-radius:4px; font-size:1.1rem; color:#facc15; border:1px dashed #666;">
-                                ${conf.codigo_secreto || "N/A"}
-                             </span>
-                        </td>
-                        <td>${validade.toLocaleDateString()}</td>
-                        <td>
-                            <button onclick="renovar('${id}', 30)" class="btn btn-renovar">+30d</button>
-                            <button onclick="renovar('${id}', 365)" class="btn btn-renovar" style="background:#d97706">+1 Ano</button>
-                            <button onclick="apagarLoja('${id}')" class="btn btn-del">🗑️</button>
+                            <button onclick="renovar('${k}', 30)">+30d</button>
+                            <button onclick="del('${k}')">X</button>
                         </td>
                     </tr>`;
-            });
+                });
+            }
         });
     }
 
     window.renovar = async (id, dias) => {
-        if(!confirm(`Renovar a loja "${id}" por mais ${dias} dias?`)) return;
-        const lojaRef = ref(db, `lojas/${id}/config`);
-        const snapshot = await get(lojaRef);
-        const dataAtual = snapshot.val();
-        
-        let baseData = new Date(); // Renova a partir de hoje
-        baseData.setDate(baseData.getDate() + dias);
-
-        await set(lojaRef, { ...dataAtual, validade: baseData.toISOString(), status: 'ativo' });
-        alert("✅ Renovada!");
+        if(!confirm("Renovar?")) return;
+        const r = ref(db, `lojas/${id}/config`);
+        const s = await get(r);
+        const hj = new Date(); hj.setDate(hj.getDate() + dias);
+        await set(r, { ...s.val(), status: 'ativo', validade: hj.toISOString() });
+        alert("Ok");
     }
-
-    window.apagarLoja = async (id) => {
-        if(prompt(`Digite DELETAR para apagar "${id}":`) === "DELETAR") {
-            await remove(ref(db, `lojas/${id}`));
-            alert("Removido.");
-        }
-    }
+    
+    window.del = async (id) => { if(confirm("Del?")) await remove(ref(db, `lojas/${id}`)); }
 </script>
 </body>
 </html>
-
