@@ -18,7 +18,7 @@
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --premium: #a855f7;
+            --premium: #a855f7; /* Cor para o plano anual */
         }
 
         body {
@@ -215,8 +215,6 @@
     </div>
 
 <script type="module">
-    // IMPORTAÇÕES: Pegamos apenas o necessário do config. 
-    // Como o config agora exporta 'storage' também, não tem problema, pegamos só o que queremos.
     import { db, ref, onValue, set, remove, get } from './firebase-config.js';
 
     // --- AUTENTICAÇÃO SIMPLES ---
@@ -349,8 +347,16 @@
         // Se já venceu, renova a partir de hoje. Se não, soma na data atual.
         let baseData = (validadeAtual > hoje) ? validadeAtual : hoje;
         baseData.setDate(baseData.getDate() + dias);
+        
+        // NOVO: Atualiza também o 'plano_escolhido' para o limite funcionar
+        const novoPlano = dias === 365 ? 'anual' : 'mensal';
 
-        await set(lojaRef, { ...data, status: "ativo", validade: baseData.toISOString() });
+        await set(lojaRef, { 
+            ...data, 
+            status: "ativo", 
+            validade: baseData.toISOString(),
+            plano_escolhido: novoPlano 
+        });
     }
 
     window.apagarLoja = async (id) => {
