@@ -268,20 +268,64 @@
 
         if (data.status === "pendente") {
             const MEU_PIX = "6485220a-c85c-4a83-a2b3-e3e230827e8c";
+            const MEU_ZAP = "5597984431811"; // Seu número para receber o comprovante
+
             document.body.innerHTML = `
-                <div style="height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; text-align:center; padding:20px;">
-                    <h1>Ativar Loja</h1><p style="color:#94a3b8;">Pagamento pendente.</p>
-                    <input type="number" id="inputCodigo" placeholder="0000" style="padding:15px; border-radius:10px; width:100%; text-align:center; margin-bottom:10px;">
-                    <button onclick="ativarLoja()" class="btn btn-primary">ATIVAR</button>
-                    <div style="margin-top:20px;">Pix: ${MEU_PIX}</div>
+                <div style="min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; text-align:center; padding:20px; background: linear-gradient(135deg, #0f172a 0%, #000000 100%);">
+                    <i class='bx bxs-lock-alt' style="font-size: 3rem; color: #fbbf24; margin-bottom: 10px;"></i>
+                    <h1 style="margin:0;">Ativar Loja</h1>
+                    <p style="color:#94a3b8; margin-bottom: 30px;">Pagamento pendente para liberação.</p>
+                    
+                    <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; border: 1px dashed #fbbf24; width: 100%; max-width: 350px; margin-bottom: 20px;">
+                        <p style="margin:0 0 10px 0; font-size: 0.9rem; color: #cbd5e1;">Chave Pix (Copia e Cola):</p>
+                        <div style="background: #0f172a; padding: 10px; border-radius: 8px; word-break: break-all; font-family: monospace; color: #fbbf24; margin-bottom: 10px; user-select: all;">
+                            ${MEU_PIX}
+                        </div>
+                        <button onclick="copiarPix()" class="btn" style="background: #fbbf24; color: black;">
+                            <i class='bx bx-copy'></i> COPIAR CHAVE PIX
+                        </button>
+                    </div>
+
+                    <button onclick="enviarComprovante()" class="btn" style="background: #25D366; color: white; margin-bottom: 30px; max-width: 350px;">
+                        <i class='bx bxl-whatsapp' style="font-size: 1.2rem;"></i> ENVIAR COMPROVANTE
+                    </button>
+
+                    <div style="width: 100%; max-width: 350px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                        <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 10px;">Já recebeu seu código de ativação?</p>
+                        <input type="number" id="inputCodigo" placeholder="Digite o Código de 4 dígitos" style="padding:15px; border-radius:10px; width:100%; text-align:center; margin-bottom:10px; border: 1px solid #334155; background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 1.1rem;">
+                        <button onclick="ativarLoja()" class="btn btn-primary">ATIVAR SISTEMA</button>
+                    </div>
                 </div>`;
+
+            // FUNÇÃO PARA COPIAR O PIX
+            window.copiarPix = () => {
+                navigator.clipboard.writeText(MEU_PIX);
+                alert("✅ Chave Pix copiada! Agora vá ao app do seu banco e pague.");
+            }
+
+            // FUNÇÃO PARA ENVIAR COMPROVANTE NO ZAP
+            window.enviarComprovante = () => {
+                const nomeLoja = data.nome || "Minha Loja";
+                const msg = `Olá! Segue o comprovante da assinatura da loja *${nomeLoja}*. Aguardo meu código de ativação.`;
+                const link = `https://wa.me/${MEU_ZAP}?text=${encodeURIComponent(msg)}`;
+                window.open(link, '_blank');
+            }
+
+            // FUNÇÃO DE ATIVAÇÃO (MANTIDA IGUAL)
             window.ativarLoja = async () => {
-                if(document.getElementById('inputCodigo').value == data.codigo_secreto) {
+                const btn = document.querySelector('button[onclick="ativarLoja()"]');
+                const input = document.getElementById('inputCodigo');
+                
+                if(input.value == data.codigo_secreto) {
+                    btn.innerText = "LIBERANDO...";
                     const hoje = new Date();
                     hoje.setDate(hoje.getDate() + (data.plano_escolhido === 'anual' ? 365 : 30));
                     await set(configRef, { ...data, status: "ativo", validade: hoje.toISOString() });
-                    alert("✅ Ativado!"); window.location.reload();
-                } else { alert("❌ Código inválido!"); }
+                    alert("✅ Pagamento Confirmado! Bem-vindo(a)!"); 
+                    window.location.reload();
+                } else { 
+                    alert("❌ Código inválido! Aguarde o envio pelo suporte."); 
+                }
             }
             return;
         }
@@ -407,3 +451,4 @@
 </script>
 </body>
 </html>
+
