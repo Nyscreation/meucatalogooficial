@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo</title>
+    <meta name="theme-color" content="#000000">
+    
+    <style>
+        body { margin: 0; padding: 0; background-color: #000; font-family: sans-serif; overflow: hidden; height: 100vh; display: flex; justify-content: center; }
+        
+        /* CARROSSEL DE FUNDO */
+        .carousel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        .slide { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background-size: cover; background-position: center; 
+            opacity: 0; transition: opacity 1.5s ease-in-out; 
+            transform: scale(1.05); /* Leve zoom para efeito */
+        }
+        .slide.active { opacity: 0.6; } /* Opacidade 0.6 para o texto aparecer bem */
+
+        /* CONTEÚDO (TEXTO E BOTÃO) */
+        .content { 
+            position: relative; z-index: 10; 
+            display: flex; flex-direction: column; 
+            justify-content: flex-end; align-items: center; 
+            height: 100%; width: 100%; max-width: 600px;
+            padding-bottom: 80px; text-align: center; color: white;
+            background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%);
+        }
+
+        h1 { 
+            font-family: 'Impact', sans-serif; text-transform: uppercase; 
+            font-size: 3rem; margin: 0; letter-spacing: 2px; line-height: 1;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+        }
+
+        .endereco {
+            font-size: 0.9rem; margin-top: 10px; margin-bottom: 30px;
+            background: rgba(255,255,255,0.15); padding: 6px 15px; 
+            border-radius: 50px; backdrop-filter: blur(5px);
+        }
+
+        .btn-entrar {
+            background: #facc15; color: black; border: none;
+            padding: 18px 40px; border-radius: 50px;
+            font-size: 1.2rem; font-weight: 900; letter-spacing: 1px;
+            cursor: pointer; text-decoration: none;
+            box-shadow: 0 0 25px rgba(250, 204, 21, 0.5);
+            animation: pulse 2s infinite;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        
+        /* Carregando */
+        .loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; font-size: 0.8rem; z-index: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="loading">Carregando loja...</div>
+
+    <div class="carousel" id="bgCarousel">
+        </div>
+
+    <div class="content" id="mainContent" style="display:none">
+        <h1 id="lojaNome">...</h1>
+        <div class="endereco"><span id="lojaEnd">...</span></div>
+        
+        <button class="btn-entrar" onclick="entrar()">
+            CONHECER CATÁLOGO ➜
+        </button>
+    </div>
+
+<script type="module">
+    import { db, ref, onValue, runTransaction } from './firebase-config.js';
+
+    const params = new URLSearchParams(window.location.search);
+    const LOJA_ID = params.get('id');
+
+    if (!LOJA_ID) { alert("Loja não encontrada"); window.location.href = "index.html"; }
+
+    // 1. CARREGAR CONFIGURAÇÃO (LEVE)
+    const configRef = ref(db, `lojas/${LOJA_ID}/config`);
+    
+    onValue(configRef, (snap) => {
+        const d = snap.val();
+        
+        if (!d || d.status === 'pendente') {
+            document.body.innerHTML = "<h1 style='color:white; text-align:center; padding-top:100px'>Loja Indisponível</h1>";
+            return;
+        }
+
+        // Preenche Texto
+        document.getElementById('lojaNome').innerText = d.nome || "Bem-vindo";
+        document.getElementById('lojaEnd').innerText = d.endereco || "Ver online";
+        
+        // Configura Fotos (Array, Objeto ou Capa Única)
+        let fotos = [];
+        if (Array.isArray(d.fotos_loja)) fotos = d.fotos_loja.filter(x => x);
+        else if (d.fotos_loja && typeof d.fotos_loja === 'object') fotos = Object.values(d.fotos_loja);
+        else if (d.capa) fotos = [d.capa];
+
+        // Monta Carrossel
+        const box = document.getElementById('bgCarousel');
+        box.innerHTML = "";
+        
+        if (fotos.length > 0) {
+            fotos.forEach((url, i) => {
+                const div = document.createElement('div');
+                div.className = `slide ${i === 0 ? 'active' : ''}`;
+                div.style.backgroundImage = `url('${url}')`;
+                box.appendChild(div);
+            });
+            if(fotos.length > 1) startCarousel();
+        } else {
+            box.innerHTML = '<div class="slide active" style="background-color:#111"></div>';
+        }
+
+        // Mostra o conteúdo
+        document.getElementById('mainContent').style.display = 'flex';
+    });
+
+    // 2. LÓGICA DO CARROSSEL
+    function startCarousel() {
+        const slides = document.querySelectorAll('.slide');
+        let index = 0;
+        setInterval(() => {
+            slides[index].classList.remove('active');
+            index = (index + 1) % slides.length;
+            slides[index].classList.add('active');
+        }, 3000); // 3 segundos por foto
+    }
+
+    // 3. AÇÃO DE ENTRAR (CONTA VISITA E REDIRECIONA)
+    window.entrar = () => {
+        const btn = document.querySelector('.btn-entrar');
+        btn.innerHTML = "Acessando...";
+        btn.style.opacity = "0.8";
+
+        // Conta a visita no Firebase
+        const visitasRef = ref(db, `lojas/${LOJA_ID}/metricas/visitas`);
+        
+        runTransaction(visitasRef, (atual) => (atual || 0) + 1)
+        .then(() => {
+            // Marca sessão para não contar de novo se der F5 no catálogo
+            sessionStorage.setItem(`visitou_${LOJA_ID}`, "true");
+            // Redireciona
+            window.location.href = `catalogo.html?id=${LOJA_ID}`;
+        })
+        .catch((err) => {
+            console.error("Erro count", err);
+            // Redireciona mesmo com erro (não trava o cliente)
+            window.location.href = `catalogo.html?id=${LOJA_ID}`;
+        });
+    }
+</script>
+</body>
+</html>
