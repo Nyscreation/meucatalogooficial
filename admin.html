@@ -151,13 +151,14 @@
             <button id="btnInstall" class="btn">📲 Instalar Aplicativo</button>
             <i class='bx bx-store' style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
             <h2>Sua Loja está Online!</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Compartilhe o link abaixo:</p>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Divulgue o link abaixo para seus clientes:</p>
+            
             <a href="#" id="linkLojaBtn" target="_blank" class="btn btn-outline" style="margin-bottom: 12px;">
-                <i class='bx bx-link-external'></i> Abrir Catálogo
+                <i class='bx bx-link-external'></i> Abrir Capa
             </a>
             <button onclick="copiarLink()" class="btn btn-primary"><i class='bx bx-copy'></i> Copiar Link</button>
         </div>
-        <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">Versão 7.0 Seguro</div>
+        <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">Versão 7.5 Seguro</div>
     </div>
 
     <nav class="bottom-nav">
@@ -195,9 +196,11 @@
 
     function showToast(msg) { const t = document.getElementById('toast'); t.innerHTML = `<i class='bx bx-check-circle'></i> <span>${msg}</span>`; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
 
-    const linkLoja = window.location.href.replace("admin.html", "catalogo.html");
+    // AJUSTADO: Link agora manda para entrada.html
+    const linkLoja = window.location.href.replace("admin.html", "entrada.html");
     document.getElementById('linkLojaBtn').href = linkLoja;
     window.copiarLink = () => { const nomeLoja = document.getElementById('confNome').value || "Loja"; const msg = `📦 *${nomeLoja}* - Catálogo Digital\n\nClique no link para ver:\n${linkLoja}`; navigator.clipboard.writeText(msg); showToast("Link copiado!"); }
+    
     window.sair = () => { if(confirm("Deseja sair?")) { localStorage.removeItem('minha_loja_id'); window.location.href = "index.html"; } }
 
     window.preview = (input, imgId) => {
@@ -212,10 +215,13 @@
         }
     }
 
+    // === COMPRESSÃO EXTREMA ===
     async function comprimirArquivo(file) {
-        const options = { maxSizeMB: 0.2, maxWidthOrHeight: 800, useWebWorker: true };
+        // maxSizeMB 0.1 (100KB) e largura máxima 600px para carregar muito rápido
+        const options = { maxSizeMB: 0.1, maxWidthOrHeight: 600, useWebWorker: true };
         try { return await imageCompression(file, options); } catch (e) { return file; }
     }
+    
     async function enviarParaNuvem(file, pasta) {
         if (!file) return null;
         const arquivoPronto = await comprimirArquivo(file);
@@ -258,10 +264,11 @@
         atualizarBadgeLimite();
     });
 
+    // DASHBOARD
     const metricasRef = ref(db, `lojas/${LOJA_ID}/metricas/visitas`);
     onValue(metricasRef, (snap) => { if(document.getElementById('txtVisitas')) document.getElementById('txtVisitas').innerText = snap.val() || 0; });
 
-    // === SALVAR CONFIGURAÇÃO (AGORA COM 5 FOTOS) ===
+    // === SALVAR CONFIGURAÇÃO (CARROSSEL) ===
     document.getElementById('btnSalvarConfig').addEventListener('click', async () => {
         const btn = document.getElementById('btnSalvarConfig');
         btn.innerHTML = "⏳ Salvando..."; btn.disabled = true;
@@ -296,7 +303,7 @@
         finally { btn.innerText = "Salvar Tudo"; btn.disabled = false; }
     });
 
-    // --- PRODUTOS (IGUAL AO ANTERIOR) ---
+    // --- PRODUTOS ---
     const produtosRef = ref(db, `lojas/${LOJA_ID}/produtos`);
     document.getElementById('btnSalvarProd').addEventListener('click', async () => {
         const limite = (PLANO_ATUAL === 'anual') ? 100 : 50;
