@@ -18,7 +18,7 @@
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --premium: #a855f7; /* Cor para o plano anual */
+            --premium: #a855f7;
         }
 
         body {
@@ -33,8 +33,7 @@
         /* --- TELA DE LOGIN --- */
         #loginScreen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(15, 23, 42, 0.98);
             z-index: 1000;
             display: flex; flex-direction: column;
             justify-content: center; align-items: center;
@@ -59,9 +58,9 @@
             border-bottom: 1px solid #334155;
         }
         .header h1 { margin: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
-        .badge-god { background: var(--primary); padding: 5px 12px; border-radius: 50px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; }
+        .badge-god { background: var(--primary); padding: 5px 12px; border-radius: 50px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: white; }
 
-        /* CARDS DE MÉTRICAS */
+        /* CARDS */
         .stats-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px; margin-bottom: 30px;
@@ -75,14 +74,12 @@
         .stat-value { font-size: 2rem; font-weight: 800; color: white; }
         .stat-icon { font-size: 1.5rem; margin-bottom: 10px; color: var(--primary); }
 
-        /* BARRA DE AÇÕES */
+        /* TABELA */
         .toolbar {
             display: flex; gap: 15px; margin-bottom: 20px;
             background: var(--surface); padding: 15px; border-radius: 12px;
         }
-        .search-box {
-            flex: 1; position: relative;
-        }
+        .search-box { flex: 1; position: relative; }
         .search-box input {
             width: 100%; padding: 12px 12px 12px 40px;
             background: var(--bg); border: 1px solid #334155;
@@ -93,7 +90,6 @@
             color: var(--text-muted);
         }
 
-        /* TABELA */
         .table-container {
             background: var(--surface); border-radius: 16px;
             border: 1px solid rgba(255,255,255,0.05);
@@ -105,45 +101,31 @@
         tr:last-child td { border-bottom: none; }
         tr:hover { background: rgba(255,255,255,0.02); }
 
-        /* ELEMENTOS DA TABELA */
         .loja-info { display: flex; flex-direction: column; }
         .loja-nome { font-weight: bold; font-size: 1rem; color: white; }
         .loja-id { font-family: monospace; color: var(--primary); font-size: 0.85rem; }
         
-        .status-badge {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 6px 12px; border-radius: 50px;
-            font-size: 0.75rem; font-weight: 600;
-        }
+        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
         .status-ativo { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .status-pendente { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
         .status-vencido { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
 
-        .plano-tag {
-            background: #334155; padding: 4px 8px; border-radius: 6px;
-            font-size: 0.75rem; color: #cbd5e1; text-transform: uppercase;
-        }
-
         .btn-action {
             width: 35px; height: 35px; border-radius: 8px; border: none;
             cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
-            font-size: 1.1rem; transition: 0.2s; margin-right: 5px;
+            font-size: 1.1rem; transition: 0.2s; margin-right: 5px; position: relative;
         }
+        .btn-action:hover { transform: scale(1.1); filter: brightness(1.2); }
+        
         .btn-zap { background: rgba(37, 211, 102, 0.1); color: #25D366; }
         .btn-link { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-        
         .btn-renovar { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-        .btn-renovar-anual { background: rgba(168, 85, 247, 0.1); color: var(--premium); }
-        
+        .btn-reset { background: rgba(255, 255, 255, 0.1); color: #fff; }
         .btn-del { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-        
-        .btn-action:hover { transform: scale(1.1); filter: brightness(1.2); }
 
-        .codigo-box {
-            background: rgba(0,0,0,0.3); border: 1px dashed #64748b;
-            padding: 8px; border-radius: 6px; font-family: monospace;
-            color: #facc15; font-size: 1.1rem; letter-spacing: 2px;
-            text-align: center; width: 80px;
+        .visitas-badge {
+            background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 8px;
+            font-family: monospace; font-size: 1rem; color: white; border: 1px solid rgba(255,255,255,0.1);
         }
     </style>
 </head>
@@ -151,18 +133,18 @@
 
     <div id="loginScreen">
         <div class="login-box">
-            <i class='bx bxs-lock-alt' style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"></i>
-            <h2>Acesso Restrito</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Painel Administrativo Master</p>
+            <i class='bx bxs-shield-plus' style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"></i>
+            <h2>Acesso Master</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Digite a senha GOD MODE</p>
             <input type="password" id="senhaInput" placeholder="Senha Mestra">
-            <button onclick="verificarSenha()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">ACESSAR SISTEMA</button>
+            <button onclick="verificarSenha()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">ENTRAR</button>
         </div>
     </div>
 
     <div id="painel" style="display:none">
         
         <div class="header">
-            <h1><i class='bx bxs-dashboard'></i> Painel Master <span class="badge-god">GOD MODE</span></h1>
+            <h1><i class='bx bxs-dashboard'></i> Painel Master <span class="badge-god">V 2.0</span></h1>
             <button onclick="sair()" style="background:none; border:1px solid #334155; color:white; padding:8px 15px; border-radius:8px; cursor:pointer;">Sair</button>
         </div>
 
@@ -173,17 +155,17 @@
                 <div class="stat-value" id="stTotal">0</div>
             </div>
             <div class="stat-card">
+                <i class='bx bxs-group stat-icon' style="color: #60a5fa;"></i>
+                <div class="stat-label">Tráfego Total (Visitas)</div>
+                <div class="stat-value" id="stVisitasTotal">0</div>
+            </div>
+            <div class="stat-card">
                 <i class='bx bxs-wallet stat-icon' style="color: #10b981;"></i>
-                <div class="stat-label">Faturamento Estimado</div>
+                <div class="stat-label">Receita Mensal Estimada</div>
                 <div class="stat-value" id="stFat">R$ 0,00</div>
             </div>
             <div class="stat-card">
-                <i class='bx bxs-check-circle stat-icon' style="color: #10b981;"></i>
-                <div class="stat-label">Lojas Ativas</div>
-                <div class="stat-value" id="stAtivas">0</div>
-            </div>
-            <div class="stat-card">
-                <i class='bx bxs-hourglass stat-icon' style="color: #f59e0b;"></i>
+                <i class='bx bxs-error-circle stat-icon' style="color: #ef4444;"></i>
                 <div class="stat-label">Pendentes / Vencidas</div>
                 <div class="stat-value" id="stPend">0</div>
             </div>
@@ -192,7 +174,7 @@
         <div class="toolbar">
             <div class="search-box">
                 <i class='bx bx-search'></i>
-                <input type="text" id="searchInput" placeholder="Pesquisar loja por nome, ID ou WhatsApp..." onkeyup="filtrarTabela()">
+                <input type="text" id="searchInput" placeholder="Buscar loja, ID ou cliente..." onkeyup="filtrarTabela()">
             </div>
         </div>
 
@@ -200,16 +182,15 @@
             <table id="tabelaLojas">
                 <thead>
                     <tr>
-                        <th>Loja / ID</th>
+                        <th>Loja / Cliente</th>
                         <th>Plano</th>
                         <th>Status</th>
+                        <th>Visitas</th>
                         <th>Vencimento</th>
-                        <th>Código Chave</th>
-                        <th>Ações Rápidas</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
-                <tbody id="listaLojas">
-                    </tbody>
+                <tbody id="listaLojas"></tbody>
             </table>
         </div>
     </div>
@@ -217,7 +198,7 @@
 <script type="module">
     import { db, ref, onValue, set, remove, get } from './firebase-config.js';
 
-    // --- AUTENTICAÇÃO SIMPLES ---
+    // --- SENHA ---
     window.verificarSenha = () => {
         if(document.getElementById('senhaInput').value === "C@listhenys1994") {
             document.getElementById('loginScreen').style.display = 'none';
@@ -228,7 +209,7 @@
     window.sair = () => location.reload();
 
     // --- CARREGAR DADOS ---
-    let lojasCache = []; // Para busca rápida
+    let lojasCache = [];
 
     function carregarLojas() {
         onValue(ref(db, 'lojas'), (snapshot) => {
@@ -243,76 +224,70 @@
                 return;
             }
 
-            // Variáveis para Estatísticas
-            let total = 0, ativas = 0, pendentes = 0, faturamento = 0;
+            let total = 0, ativas = 0, pendentes = 0, faturamento = 0, totalVisitasGlobal = 0;
 
             Object.entries(dados).forEach(([id, loja]) => {
                 const c = loja.config || {};
+                const m = loja.metricas || {}; // Pega métricas
+                const visitas = m.visitas || 0; // Se não tiver, é 0
+
                 total++;
+                totalVisitasGlobal += visitas;
                 
-                // Cálculos de Status e Data
+                // Status
                 const validade = c.validade ? new Date(c.validade) : new Date(0);
-                const hoje = new Date();
-                const diasRestantes = Math.ceil((validade - hoje) / (1000 * 60 * 60 * 24));
+                const diasRestantes = Math.ceil((validade - new Date()) / (1000 * 60 * 60 * 24));
                 
                 let statusHTML = "";
-                
                 if (c.status === "pendente") {
-                    statusHTML = `<span class="status-badge status-pendente"><i class='bx bxs-lock-alt'></i> Bloqueado</span>`;
+                    statusHTML = `<span class="status-badge status-pendente">Bloqueado</span>`;
                     pendentes++;
                 } else if (diasRestantes < 0) {
-                    statusHTML = `<span class="status-badge status-vencido"><i class='bx bxs-error-circle'></i> Vencido (${Math.abs(diasRestantes)}d)</span>`;
+                    statusHTML = `<span class="status-badge status-vencido">Vencido</span>`;
                     pendentes++;
                 } else {
-                    statusHTML = `<span class="status-badge status-ativo"><i class='bx bxs-check-circle'></i> Ativo (${diasRestantes} dias)</span>`;
+                    statusHTML = `<span class="status-badge status-ativo">Ativo (${diasRestantes}d)</span>`;
                     ativas++;
                     faturamento += (c.plano_escolhido === 'anual') ? 249.90 : 59.90;
                 }
 
-                // Renderizar Linha
+                // Linha da Tabela
                 const row = `
                     <tr>
                         <td>
                             <div class="loja-info">
                                 <span class="loja-nome">${c.nome}</span>
-                                <span class="loja-id">@${id}</span>
+                                <span class="loja-id">ID: ${id}</span>
                                 <span style="font-size:0.7rem; color:#64748b">${c.zap}</span>
                             </div>
                         </td>
-                        <td>
-                            <span class="plano-tag">${c.plano_escolhido || "-"}</span>
-                        </td>
+                        <td><span style="background:#334155; padding:3px 8px; border-radius:4px; font-size:0.75rem;">${c.plano_escolhido || "-"}</span></td>
                         <td>${statusHTML}</td>
-                        <td style="color:#94a3b8; font-size:0.85rem">
-                            ${validade.toLocaleDateString('pt-BR')}
-                        </td>
+                        <td><span class="visitas-badge"><i class='bx bx-show'></i> ${visitas}</span></td>
+                        <td style="color:#94a3b8; font-size:0.85rem">${validade.toLocaleDateString('pt-BR')}</td>
                         <td>
-                            <div class="codigo-box">${c.codigo_secreto || "---"}</div>
-                        </td>
-                        <td>
-                            <button class="btn-action btn-zap" title="Chamar no WhatsApp" onclick="window.open('https://wa.me/${c.zap}', '_blank')"><i class='bx bxl-whatsapp'></i></button>
-                            <button class="btn-action btn-link" title="Copiar Link da Loja" onclick="copiarLink('${id}')"><i class='bx bx-link'></i></button>
+                            <button class="btn-action btn-zap" onclick="window.open('https://wa.me/${c.zap}', '_blank')" title="WhatsApp"><i class='bx bxl-whatsapp'></i></button>
                             
-                            <button class="btn-action btn-renovar" title="Renovar Mensal (+30 dias)" onclick="renovar('${id}', 30)"><i class='bx bx-calendar'></i></button>
-                            <button class="btn-action btn-renovar-anual" title="Renovar Anual (+365 dias)" onclick="renovar('${id}', 365)"><i class='bx bx-calendar-star'></i></button>
+                            <button class="btn-action btn-link" onclick="copiarLink('${id}')" title="Copiar Link Capa"><i class='bx bx-link'></i></button>
                             
-                            <button class="btn-action btn-del" title="Apagar Loja" onclick="apagarLoja('${id}')"><i class='bx bx-trash'></i></button>
+                            <button class="btn-action btn-reset" onclick="zerarVisitas('${id}')" title="Zerar Visitas"><i class='bx bx-reset'></i></button>
+                            
+                            <button class="btn-action btn-renovar" onclick="renovar('${id}', 30)" title="Renovar 30 dias"><i class='bx bx-calendar'></i></button>
+                            <button class="btn-action btn-del" onclick="apagarLoja('${id}')" title="Apagar Loja"><i class='bx bx-trash'></i></button>
                         </td>
                     </tr>
                 `;
                 tbody.innerHTML += row;
-                
-                // Salvar para busca
                 lojasCache.push({ row, text: (c.nome + id + c.zap).toLowerCase() });
             });
 
-            atualizarStats(total, ativas, pendentes, faturamento);
+            atualizarStats(total, totalVisitasGlobal, pendentes, faturamento);
         });
     }
 
-    function atualizarStats(total, ativas, pendentes, fat) {
+    function atualizarStats(total, visitas, pendentes, fat) {
         document.getElementById('stTotal').innerText = total;
-        document.getElementById('stAtivas').innerText = ativas;
+        document.getElementById('stVisitasTotal').innerText = visitas; // Exibe o total de visitas de todas as lojas
         document.getElementById('stPend').innerText = pendentes;
         document.getElementById('stFat').innerText = fat.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
@@ -321,21 +296,26 @@
         const termo = document.getElementById('searchInput').value.toLowerCase();
         const tbody = document.getElementById('listaLojas');
         tbody.innerHTML = "";
-        lojasCache.forEach(item => {
-            if(item.text.includes(termo)) tbody.innerHTML += item.row;
-        });
+        lojasCache.forEach(item => { if(item.text.includes(termo)) tbody.innerHTML += item.row; });
     }
 
+    // ATUALIZADO: Copia o link para entrada.html
     window.copiarLink = (id) => {
         const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-        const link = `${baseUrl}catalogo.html?id=${id}`;
+        const link = `${baseUrl}entrada.html?id=${id}`;
         navigator.clipboard.writeText(link);
-        alert("Link copiado: " + link);
+        alert("Link da Capa copiado:\n" + link);
+    }
+
+    // NOVO: Zera as visitas no banco de dados
+    window.zerarVisitas = async (id) => {
+        if(confirm(`Tem certeza que deseja ZERAR o contador de visitas da loja ${id}?`)) {
+            await set(ref(db, `lojas/${id}/metricas/visitas`), 0);
+        }
     }
 
     window.renovar = async (id, dias) => {
-        const tipo = dias === 365 ? "ANUAL (365 dias)" : "MENSAL (30 dias)";
-        if(!confirm(`Confirma a renovação ${tipo} para a loja "${id}"?`)) return;
+        if(!confirm(`Renovar loja "${id}" por ${dias} dias?`)) return;
         
         const lojaRef = ref(db, `lojas/${id}/config`);
         const snapshot = await get(lojaRef);
@@ -343,27 +323,15 @@
         
         let validadeAtual = new Date(data.validade);
         const hoje = new Date();
-        
-        // Se já venceu, renova a partir de hoje. Se não, soma na data atual.
         let baseData = (validadeAtual > hoje) ? validadeAtual : hoje;
         baseData.setDate(baseData.getDate() + dias);
         
-        // NOVO: Atualiza também o 'plano_escolhido' para o limite funcionar
-        const novoPlano = dias === 365 ? 'anual' : 'mensal';
-
-        await set(lojaRef, { 
-            ...data, 
-            status: "ativo", 
-            validade: baseData.toISOString(),
-            plano_escolhido: novoPlano 
-        });
+        await set(lojaRef, { ...data, status: "ativo", validade: baseData.toISOString(), plano_escolhido: dias === 365 ? 'anual' : 'mensal' });
     }
 
     window.apagarLoja = async (id) => {
-        const confirmacao = prompt(`Para deletar a loja "${id}", digite DELETAR abaixo:`);
-        if(confirmacao === "DELETAR") {
+        if(prompt(`Para apagar a loja "${id}", digite DELETAR:`) === "DELETAR") {
             await remove(ref(db, `lojas/${id}`));
-            alert("Loja removida permanentemente.");
         }
     }
 </script>
