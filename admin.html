@@ -17,71 +17,44 @@
     
     <style>
         :root { --primary: #3b82f6; --text: #f1f5f9; --text-muted: #94a3b8; --glass-bg: rgba(255, 255, 255, 0.08); --glass-border: rgba(255, 255, 255, 0.1); --input-bg: rgba(0, 0, 0, 0.3); }
-        
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; } 
-        
         body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0f172a 0%, #172554 100%); background-attachment: fixed; margin: 0; padding: 0; padding-bottom: 90px; color: var(--text); -webkit-font-smoothing: antialiased; min-height: 100vh; }
-        
         .app-header { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 15px 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
         .app-header h3 { margin: 0; font-size: 1.1rem; color: var(--primary); }
         .loja-id { font-size: 0.8rem; color: var(--text-muted); font-weight: normal; }
-        
         .tab-content { display: none; padding: 20px; animation: fadeIn 0.3s; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
         .card { background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-radius: 16px; padding: 20px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); border: 1px solid var(--glass-border); margin-bottom: 20px; }
-        
         h2 { font-size: 1.2rem; margin-top: 0; margin-bottom: 15px; color: white; display: flex; justify-content: space-between; align-items: center; }
-        
         input, select { width: 100%; padding: 14px; border: 1px solid var(--glass-border); border-radius: 12px; font-size: 0.95rem; background: var(--input-bg); color: white; outline: none; margin-top: 5px; margin-bottom: 15px; transition: 0.3s; }
         input:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); }
         label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
-        
-        .btn { 
-            width: 100%; 
-            padding: 14px; 
-            border-radius: 12px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-            font-size: 0.95rem; 
-            transition: all 0.2s ease; 
-            text-decoration: none; 
-            border: 2px solid transparent; 
-        }
-        
+        .btn { width: 100%; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.95rem; transition: all 0.2s ease; text-decoration: none; border: 2px solid transparent; }
         .btn:active { transform: scale(0.98); opacity: 0.9; } 
-        
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
         .btn-outline { border: 2px solid var(--primary); background: transparent; color: var(--primary); }
-        
         .btn-del { color: #f87171; background: rgba(239, 68, 68, 0.1); border: none; padding: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        .btn-del:active { background: rgba(239, 68, 68, 0.2); }
-
         .product-item { display: flex; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--glass-border); }
         .product-item img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; margin-right: 15px; background: #334155; }
         .info { flex: 1; }
         .info strong { display: block; font-size: 0.95rem; color: white; }
         .info span { color: var(--text-muted); font-size: 0.85rem; }
-        
-        #previewCapa { width: 100%; height: 120px; object-fit: cover; border-radius: 12px; margin-bottom: 15px; background: #334155; border: 1px solid var(--glass-border); }
-        
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(12px); border-top: 1px solid var(--glass-border); display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #64748b; font-size: 0.75rem; cursor: pointer; width: 100%; border: none; background: none; }
         .nav-item i { font-size: 1.5rem; margin-bottom: 4px; }
         .nav-item.active { color: var(--primary); }
-        
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 12px 24px; border-radius: 50px; font-size: 0.9rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); opacity: 0; visibility: hidden; transition: 0.3s; z-index: 2000; display: flex; align-items: center; gap: 8px; font-weight: bold; }
         .toast.show { opacity: 1; visibility: visible; top: 30px; }
-        
         #btnInstall { display: none; margin-bottom: 20px; background: #22c55e; color: white; border: none; }
-        
         .limit-badge { font-size: 0.8rem; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 20px; color: var(--text-muted); border: 1px solid var(--glass-border); }
         .limit-alert { color: #f87171; border-color: rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.1); }
+        
+        /* NOVO: Estilo dos Slots de Foto */
+        .foto-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 15px; }
+        .foto-slot { aspect-ratio: 1; background: #334155; border-radius: 8px; border: 1px dashed var(--glass-border); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; cursor: pointer; }
+        .foto-slot img { width: 100%; height: 100%; object-fit: cover; }
+        .foto-slot i { font-size: 1.5rem; color: var(--text-muted); }
     </style>
 </head>
 <body>
@@ -95,6 +68,24 @@
         </div>
         <button onclick="sair()" style="border:none; background:none; color:#f87171;"><i class='bx bx-log-out' style="font-size:1.5rem"></i></button>
     </header>
+
+    <div id="tab-dashboard" class="tab-content">
+        <div class="card" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border:none;">
+            <h2 style="margin-bottom: 5px; color: rgba(255,255,255,0.8); font-size: 1rem;">Total de Visitantes</h2>
+            <div style="font-size: 3.5rem; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px;">
+                <i class='bx bxs-group' style="font-size: 2.5rem; opacity: 0.5;"></i>
+                <span id="txtVisitas">0</span>
+            </div>
+            <p style="color: rgba(255,255,255,0.7); font-size: 0.8rem; margin: 0;">Pessoas que acessaram seu catálogo</p>
+        </div>
+        <div class="card">
+            <h2>Dicas</h2>
+            <ul style="padding-left: 20px; color: var(--text-muted); font-size: 0.9rem;">
+                <li>Divulgue o link no Instagram Bio.</li>
+                <li>Mande o link no WhatsApp.</li>
+            </ul>
+        </div>
+    </div>
 
     <div id="tab-produtos" class="tab-content active">
         <div class="card">
@@ -119,23 +110,38 @@
             <h2 style="font-size: 1rem; color: var(--text-muted); margin:0;">Seus Produtos</h2>
             <span id="limitDisplay" class="limit-badge">Calculando...</span>
         </div>
-        
         <div id="lista"><div style="text-align:center; padding: 40px; color: var(--text-muted);">Carregando...</div></div>
     </div>
 
     <div id="tab-loja" class="tab-content">
         <div class="card">
-            <h2>Aparência</h2>
-            <img id="previewCapa" src="https://via.placeholder.com/600x200?text=Sua+Capa+Aqui">
-            <label class="btn btn-outline" for="inputCapa">Alterar Capa</label>
-            <input type="file" id="inputCapa" accept="image/*" style="display:none">
+            <h2>Fotos da Fachada (Carrossel)</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">Adicione até 5 fotos para a tela inicial.</p>
+            
+            <div class="foto-grid">
+                <label class="foto-slot" for="f1"><img id="prev1" src="" style="display:none"><i class='bx bxs-camera'></i></label>
+                <input type="file" id="f1" accept="image/*" style="display:none" onchange="preview(this, 'prev1')">
+                
+                <label class="foto-slot" for="f2"><img id="prev2" src="" style="display:none"><i class='bx bxs-camera'></i></label>
+                <input type="file" id="f2" accept="image/*" style="display:none" onchange="preview(this, 'prev2')">
+                
+                <label class="foto-slot" for="f3"><img id="prev3" src="" style="display:none"><i class='bx bxs-camera'></i></label>
+                <input type="file" id="f3" accept="image/*" style="display:none" onchange="preview(this, 'prev3')">
+                
+                <label class="foto-slot" for="f4"><img id="prev4" src="" style="display:none"><i class='bx bxs-camera'></i></label>
+                <input type="file" id="f4" accept="image/*" style="display:none" onchange="preview(this, 'prev4')">
+                
+                <label class="foto-slot" for="f5"><img id="prev5" src="" style="display:none"><i class='bx bxs-camera'></i></label>
+                <input type="file" id="f5" accept="image/*" style="display:none" onchange="preview(this, 'prev5')">
+            </div>
         </div>
+
         <div class="card">
-            <h2>Dados</h2>
+            <h2>Dados da Loja</h2>
             <label>Nome da Loja</label><input type="text" id="confNome">
             <label>WhatsApp</label><input type="tel" id="confZap">
             <label>Endereço</label><input type="text" id="confEnd">
-            <button id="btnSalvarConfig" class="btn btn-primary">Salvar Alterações</button>
+            <button id="btnSalvarConfig" class="btn btn-primary">Salvar Tudo</button>
         </div>
         <div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">Plano válido até: <strong style="color:white" id="txtValidade">...</strong></div>
     </div>
@@ -146,18 +152,16 @@
             <i class='bx bx-store' style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
             <h2>Sua Loja está Online!</h2>
             <p style="color: var(--text-muted); margin-bottom: 20px;">Compartilhe o link abaixo:</p>
-            
             <a href="#" id="linkLojaBtn" target="_blank" class="btn btn-outline" style="margin-bottom: 12px;">
                 <i class='bx bx-link-external'></i> Abrir Catálogo
             </a>
-            <button onclick="copiarLink()" class="btn btn-primary">
-                <i class='bx bx-copy'></i> Copiar Link
-            </button>
+            <button onclick="copiarLink()" class="btn btn-primary"><i class='bx bx-copy'></i> Copiar Link</button>
         </div>
         <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">Versão 7.0 Seguro</div>
     </div>
 
     <nav class="bottom-nav">
+        <button class="nav-item" onclick="mudarAba('dashboard', this)"><i class='bx bx-bar-chart-alt-2'></i><span>Visão Geral</span></button>
         <button class="nav-item active" onclick="mudarAba('produtos', this)"><i class='bx bx-package'></i><span>Produtos</span></button>
         <button class="nav-item" onclick="mudarAba('loja', this)"><i class='bx bx-store-alt'></i><span>Loja</span></button>
         <button class="nav-item" onclick="mudarAba('perfil', this)"><i class='bx bx-share-alt'></i><span>Compartilhar</span></button>
@@ -168,32 +172,20 @@
 
     const params = new URLSearchParams(window.location.search);
     let LOJA_ID = params.get('id');
-    
     let PLANO_ATUAL = "mensal"; 
     let TOTAL_PRODUTOS = 0;
 
     if (!LOJA_ID) {
         const savedId = localStorage.getItem('minha_loja_id');
-        if (savedId) {
-            window.location.href = `admin.html?id=${savedId}`;
-            throw new Error("Redirecionando..."); 
-        } else {
-            window.location.href = "index.html";
-        }
+        if (savedId) { window.location.href = `admin.html?id=${savedId}`; throw new Error("Redirecionando..."); } 
+        else { window.location.href = "index.html"; }
     }
-
     document.getElementById('displayId').innerText = LOJA_ID;
 
-    // === PWA LOGIC ===
+    // === PWA & UI ===
     if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); }); }
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault(); deferredPrompt = e;
-        const btn = document.getElementById('btnInstall'); btn.style.display = 'block';
-        btn.addEventListener('click', () => { deferredPrompt.prompt(); deferredPrompt.userChoice.then((c) => { if (c.outcome === 'accepted') btn.style.display = 'none'; deferredPrompt = null; }); });
-    });
+    let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('btnInstall'); btn.style.display = 'block'; btn.addEventListener('click', () => { deferredPrompt.prompt(); }); });
 
-    // === UI LOGIC ===
     window.mudarAba = (abaId, btn) => {
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
         document.getElementById(`tab-${abaId}`).classList.add('active');
@@ -201,36 +193,29 @@
         btn.classList.add('active');
     }
 
-    function showToast(msg) {
-        const t = document.getElementById('toast'); t.innerHTML = `<i class='bx bx-check-circle'></i> <span>${msg}</span>`; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000);
-    }
+    function showToast(msg) { const t = document.getElementById('toast'); t.innerHTML = `<i class='bx bx-check-circle'></i> <span>${msg}</span>`; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
 
     const linkLoja = window.location.href.replace("admin.html", "catalogo.html");
     document.getElementById('linkLojaBtn').href = linkLoja;
-    
-    window.copiarLink = () => { 
-        const nomeLoja = document.getElementById('confNome').value || "Loja";
-        const msg = `📦 *${nomeLoja}* - Catálogo Digital\n\nClique no link abaixo para ver nossos produtos, fotos e preços atualizados. Faça seu pedido online!\n\n👇👇👇\n${linkLoja}`;
-        navigator.clipboard.writeText(msg); 
-        showToast("Texto e Link copiados!"); 
-    }
-    
-    window.sair = () => { 
-        if(confirm("Deseja sair e desconectar desta loja?")) {
-            localStorage.removeItem('minha_loja_id');
-            window.location.href = "index.html"; 
+    window.copiarLink = () => { const nomeLoja = document.getElementById('confNome').value || "Loja"; const msg = `📦 *${nomeLoja}* - Catálogo Digital\n\nClique no link para ver:\n${linkLoja}`; navigator.clipboard.writeText(msg); showToast("Link copiado!"); }
+    window.sair = () => { if(confirm("Deseja sair?")) { localStorage.removeItem('minha_loja_id'); window.location.href = "index.html"; } }
+
+    window.preview = (input, imgId) => {
+        if(input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) { 
+                const img = document.getElementById(imgId);
+                img.src = e.target.result; 
+                img.style.display = "block";
+            }
+            reader.readAsDataURL(input.files[0]);
         }
     }
 
-    // ===============================================
-    // ☁️ STORAGE UPLOAD
-    // ===============================================
     async function comprimirArquivo(file) {
         const options = { maxSizeMB: 0.2, maxWidthOrHeight: 800, useWebWorker: true };
-        try { return await imageCompression(file, options); } 
-        catch (error) { console.error("Erro na compressão", error); return file; }
+        try { return await imageCompression(file, options); } catch (e) { return file; }
     }
-
     async function enviarParaNuvem(file, pasta) {
         if (!file) return null;
         const arquivoPronto = await comprimirArquivo(file);
@@ -241,143 +226,81 @@
         return await getDownloadURL(storageRef);
     }
 
-    // ===============================================
-    // 🔥 FIREBASE LOGIC E LIMITES
-    // ===============================================
+    // === CARREGAR DADOS ===
     const configRef = ref(db, `lojas/${LOJA_ID}/config`);
-    
     onValue(configRef, (snapshot) => {
         const data = snapshot.val();
-        
-        if (!data) {
-            alert("⚠️ Loja não encontrada.");
-            localStorage.removeItem('minha_loja_id');
-            window.location.href = "index.html";
-            return;
-        } else {
-            localStorage.setItem('minha_loja_id', LOJA_ID);
-        }
+        if (!data) return;
 
         PLANO_ATUAL = data.plano_escolhido || "mensal";
-
-        // --- TELA DE BLOQUEIO / PAGAMENTO ---
-        if (data.status === "pendente") {
-            const MEU_PIX = "6485220a-c85c-4a83-a2b3-e3e230827e8c";
-            const MEU_ZAP = "5597984431811"; 
-
-            document.body.innerHTML = `
-                <div style="min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; text-align:center; padding:20px; background: linear-gradient(135deg, #0f172a 0%, #000000 100%);">
-                    <i class='bx bxs-lock-alt' style="font-size: 3rem; color: #fbbf24; margin-bottom: 10px;"></i>
-                    <h1 style="margin:0;">Ativar Loja</h1>
-                    <p style="color:#94a3b8; margin-bottom: 30px;">Pagamento pendente para liberação.</p>
-                    
-                    <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; border: 1px dashed #fbbf24; width: 100%; max-width: 350px; margin-bottom: 20px;">
-                        <p style="margin:0 0 10px 0; font-size: 0.9rem; color: #cbd5e1;">Chave Pix (Copia e Cola):</p>
-                        <div style="background: #0f172a; padding: 10px; border-radius: 8px; word-break: break-all; font-family: monospace; color: #fbbf24; margin-bottom: 10px; user-select: all;">
-                            ${MEU_PIX}
-                        </div>
-                        <button onclick="copiarPix()" class="btn" style="background: #fbbf24; color: black;">
-                            <i class='bx bx-copy'></i> COPIAR CHAVE PIX
-                        </button>
-                    </div>
-
-                    <button onclick="enviarComprovante()" class="btn" style="background: #25D366; color: white; margin-bottom: 30px; max-width: 350px;">
-                        <i class='bx bxl-whatsapp' style="font-size: 1.2rem;"></i> ENVIAR COMPROVANTE
-                    </button>
-
-                    <div style="width: 100%; max-width: 350px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
-                        <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 10px;">Já recebeu seu código de ativação?</p>
-                        <input type="number" id="inputCodigo" placeholder="Digite o Código de 4 dígitos" style="padding:15px; border-radius:10px; width:100%; text-align:center; margin-bottom:10px; border: 1px solid #334155; background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 1.1rem;">
-                        <button onclick="ativarLoja()" class="btn btn-primary">ATIVAR SISTEMA</button>
-                    </div>
-                </div>`;
-
-            window.copiarPix = () => {
-                navigator.clipboard.writeText(MEU_PIX);
-                alert("✅ Chave Pix copiada!");
-            }
-
-            window.enviarComprovante = () => {
-                const nomeLoja = data.nome || "Minha Loja";
-                const msg = `Olá! Segue o comprovante da assinatura da loja *${nomeLoja}*. Aguardo meu código de ativação.`;
-                const link = `https://wa.me/${MEU_ZAP}?text=${encodeURIComponent(msg)}`;
-                window.open(link, '_blank');
-            }
-
-            window.ativarLoja = async () => {
-                const btn = document.querySelector('button[onclick="ativarLoja()"]');
-                const input = document.getElementById('inputCodigo');
-                
-                if(input.value == data.codigo_secreto) {
-                    btn.innerText = "LIBERANDO...";
-                    const hoje = new Date();
-                    hoje.setDate(hoje.getDate() + (data.plano_escolhido === 'anual' ? 365 : 30));
-                    await set(configRef, { ...data, status: "ativo", validade: hoje.toISOString() });
-                    alert("✅ Pagamento Confirmado! Bem-vindo(a)!"); 
-                    // O reload acontece automaticamente pelo próximo bloco if
-                } else { 
-                    alert("❌ Código inválido! Aguarde o envio pelo suporte."); 
-                }
-            }
-            return;
+        if (data.status === "pendente" || (new Date() > new Date(data.validade))) {
+            if(data.status !== "pendente") document.body.innerHTML = "<h1 style='color:white;text-align:center;padding:50px'>VENCIDO</h1>";
+            return; 
         }
 
-        if(new Date() > (data.validade ? new Date(data.validade) : new Date())) {
-            document.body.innerHTML = "<h1 style='color:white;text-align:center;padding:50px'>VENCIDO</h1>"; return;
-        }
-
-        // ======================================================
-        // 🚨 CORREÇÃO DO ERRO DE CARREGAMENTO 🚨
-        // Se a tela de bloqueio ainda estiver ativa, recarrega a página.
-        // ======================================================
-        if (!document.getElementById('confNome')) {
-            window.location.reload();
-            return;
-        }
+        if (!document.getElementById('confNome')) { window.location.reload(); return; }
 
         document.getElementById('confNome').value = data.nome || "";
         document.getElementById('confEnd').value = data.endereco || "";
         document.getElementById('confZap').value = data.zap || "";
         document.getElementById('txtValidade').innerText = new Date(data.validade).toLocaleDateString('pt-BR');
-        if(data.capa) document.getElementById('previewCapa').src = data.capa;
+
+        // Carregar fotos do carrossel existentes
+        const fotos = data.fotos_loja || [];
+        for(let i=0; i<5; i++) {
+            if(fotos[i]) {
+                const img = document.getElementById(`prev${i+1}`);
+                img.src = fotos[i];
+                img.style.display = "block";
+            }
+        }
         
         atualizarBadgeLimite();
     });
 
+    const metricasRef = ref(db, `lojas/${LOJA_ID}/metricas/visitas`);
+    onValue(metricasRef, (snap) => { if(document.getElementById('txtVisitas')) document.getElementById('txtVisitas').innerText = snap.val() || 0; });
+
+    // === SALVAR CONFIGURAÇÃO (AGORA COM 5 FOTOS) ===
     document.getElementById('btnSalvarConfig').addEventListener('click', async () => {
         const btn = document.getElementById('btnSalvarConfig');
-        const file = document.getElementById('inputCapa').files[0];
-        
-        btn.innerHTML = "⏳ Enviando imagem...";
-        btn.disabled = true;
+        btn.innerHTML = "⏳ Salvando..."; btn.disabled = true;
 
         try {
-            let capaUrl = document.getElementById('previewCapa').src;
-            if(file) { capaUrl = await enviarParaNuvem(file, 'config'); }
-            
             const snap = await get(configRef);
+            const dadosAtuais = snap.val();
+            let listaFotos = dadosAtuais.fotos_loja || [];
+
+            // Loop para enviar as 5 fotos (se houver novas)
+            for(let i=1; i<=5; i++) {
+                const fileInput = document.getElementById(`f${i}`);
+                if(fileInput.files[0]) {
+                    const url = await enviarParaNuvem(fileInput.files[0], 'loja');
+                    listaFotos[i-1] = url; // Atualiza a posição no array
+                }
+            }
+            
+            // Usa a primeira foto como capa padrão (fallback)
+            const capaPrincipal = listaFotos[0] || dadosAtuais.capa || "";
+
             await set(configRef, { 
-                ...snap.val(), 
+                ...dadosAtuais, 
                 nome: document.getElementById('confNome').value, 
                 endereco: document.getElementById('confEnd').value, 
                 zap: document.getElementById('confZap').value, 
-                capa: capaUrl 
+                capa: capaPrincipal,
+                fotos_loja: listaFotos // Salva o array novo
             });
-            showToast("Salvo!");
+            showToast("Dados atualizados!");
         } catch(e) { alert("Erro: " + e.message); } 
-        finally { btn.innerText = "Salvar Alterações"; btn.disabled = false; }
+        finally { btn.innerText = "Salvar Tudo"; btn.disabled = false; }
     });
 
-    // --- PRODUTOS ---
+    // --- PRODUTOS (IGUAL AO ANTERIOR) ---
     const produtosRef = ref(db, `lojas/${LOJA_ID}/produtos`);
-    
     document.getElementById('btnSalvarProd').addEventListener('click', async () => {
         const limite = (PLANO_ATUAL === 'anual') ? 100 : 50;
-        
-        if (TOTAL_PRODUTOS >= limite) {
-            alert(`⚠️ LIMITE ATINGIDO!\n\nSeu plano ${PLANO_ATUAL.toUpperCase()} permite apenas ${limite} produtos.`);
-            return; 
-        }
+        if (TOTAL_PRODUTOS >= limite) { alert(`Limite do plano ${PLANO_ATUAL} atingido!`); return; }
 
         const btn = document.getElementById('btnSalvarProd');
         const nome = document.getElementById('nomeProd').value;
@@ -386,62 +309,35 @@
         const file = document.getElementById('fotoProd').files[0];
         
         if(!nome || !preco) return showToast("Preencha nome e preço!");
-        
-        btn.innerHTML = "⏳ Enviando foto...";
-        btn.disabled = true;
+        btn.innerHTML = "⏳ ..."; btn.disabled = true;
 
         try {
             let imgUrl = "https://via.placeholder.com/150";
             if(file) { imgUrl = await enviarParaNuvem(file, 'produtos'); }
             
-            await set(push(produtosRef), { 
-                nome, cat, preco: parseFloat(preco), img: imgUrl, 
-                codigo: Math.floor(10000 + Math.random() * 90000) 
-            });
-            
+            await set(push(produtosRef), { nome, cat, preco: parseFloat(preco), img: imgUrl, codigo: Math.floor(10000 + Math.random() * 90000) });
             showToast("Adicionado!");
-            document.getElementById('nomeProd').value = ""; 
-            document.getElementById('precoProd').value = ""; 
-            document.getElementById('fotoProd').value = "";
+            document.getElementById('nomeProd').value = ""; document.getElementById('precoProd').value = ""; document.getElementById('fotoProd').value = "";
         } catch(e) { alert("Erro: " + e.message); } 
         finally { btn.innerText = "Adicionar Produto"; btn.disabled = false; }
     });
 
     onValue(produtosRef, (snapshot) => {
-        const div = document.getElementById('lista');
-        div.innerHTML = "";
+        const div = document.getElementById('lista'); div.innerHTML = "";
         const data = snapshot.val();
-        
         if(data) {
-            const chaves = Object.keys(data);
-            TOTAL_PRODUTOS = chaves.length; 
-            chaves.reverse().forEach(key => { 
-                const p = data[key];
-                div.innerHTML += `<div class="product-item"><img src="${p.img}"><div class="info"><strong>${p.nome} #${p.codigo||'--'}</strong><span>R$ ${p.preco}</span></div><button class="btn-del" onclick="deletar('${key}')">🗑️</button></div>`;
-            });
-        } else {
-            TOTAL_PRODUTOS = 0;
-            div.innerHTML = "<div style='text-align:center; padding:20px; color:#64748b'>Nenhum produto ainda.</div>";
-        }
+            const chaves = Object.keys(data); TOTAL_PRODUTOS = chaves.length; 
+            chaves.reverse().forEach(key => { const p = data[key]; div.innerHTML += `<div class="product-item"><img src="${p.img}"><div class="info"><strong>${p.nome}</strong><span>R$ ${p.preco}</span></div><button class="btn-del" onclick="deletar('${key}')">🗑️</button></div>`; });
+        } else { TOTAL_PRODUTOS = 0; div.innerHTML = "<div style='text-align:center; padding:20px; color:#64748b'>Vazio.</div>"; }
         atualizarBadgeLimite();
     });
 
     function atualizarBadgeLimite() {
         const limite = (PLANO_ATUAL === 'anual') ? 100 : 50;
         const badge = document.getElementById('limitDisplay');
-        if(badge) {
-            badge.innerText = `${TOTAL_PRODUTOS} / ${limite} (Plano ${PLANO_ATUAL})`;
-            if (TOTAL_PRODUTOS >= limite) {
-                badge.classList.add('limit-alert');
-                badge.innerText = `LIMITE CHEIO (${TOTAL_PRODUTOS}/${limite})`;
-            } else {
-                badge.classList.remove('limit-alert');
-            }
-        }
+        if(badge) { badge.innerText = `${TOTAL_PRODUTOS} / ${limite}`; if (TOTAL_PRODUTOS >= limite) badge.classList.add('limit-alert'); else badge.classList.remove('limit-alert'); }
     }
-
     window.deletar = async (id) => { if(confirm("Apagar?")) await remove(ref(db, `lojas/${LOJA_ID}/produtos/${id}`)); }
-    document.getElementById('inputCapa').addEventListener('change', function(e) { if(e.target.files[0]) document.getElementById('previewCapa').src = URL.createObjectURL(e.target.files[0]); });
 </script>
 </body>
 </html>
