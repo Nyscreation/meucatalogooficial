@@ -2,31 +2,54 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bem-vindo</title>
     <meta name="theme-color" content="#000000">
     
     <style>
-        body { margin: 0; padding: 0; background-color: #000; font-family: sans-serif; overflow: hidden; height: 100vh; display: flex; justify-content: center; }
+        /* AJUSTE 1: Altura Dinâmica e Travamento de Rolagem */
+        body { 
+            margin: 0; padding: 0; 
+            background-color: #000; 
+            font-family: sans-serif; 
+            overflow: hidden; /* Remove barra de rolagem */
+            width: 100vw;
+            height: 100vh; /* Fallback */
+            height: 100dvh; /* Altura real visível no celular */
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+        }
         
-        /* CARROSSEL DE FUNDO */
         .carousel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
         .slide { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             background-size: cover; background-position: center; 
             opacity: 0; transition: opacity 1.5s ease-in-out; 
-            transform: scale(1.05); /* Leve zoom para efeito */
+            transform: scale(1.05); 
         }
-        .slide.active { opacity: 0.6; } /* Opacidade 0.6 para o texto aparecer bem */
+        .slide.active { opacity: 0.6; }
 
-        /* CONTEÚDO (TEXTO E BOTÃO) */
+        /* AJUSTE 2: Conteúdo Centralizado/Ajustado */
         .content { 
             position: relative; z-index: 10; 
             display: flex; flex-direction: column; 
-            justify-content: flex-end; align-items: center; 
+            justify-content: center; /* Centraliza verticalmente para garantir visibilidade */
+            align-items: center; 
             height: 100%; width: 100%; max-width: 600px;
-            padding-bottom: 80px; text-align: center; color: white;
-            background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 60%);
+            padding: 20px;
+            box-sizing: border-box; /* Garante que padding não estoure a tela */
+            text-align: center; color: white;
+            /* Degradê mais suave para garantir leitura */
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%);
+        }
+
+        /* Área específica para o texto e botão ficarem mais para baixo, mas seguros */
+        .info-box {
+            margin-top: auto; /* Empurra para baixo */
+            margin-bottom: 10vh; /* Deixa 10% da tela livre em baixo (ZONA SEGURA) */
+            display: flex; flex-direction: column; align-items: center;
+            width: 100%;
         }
 
         h1 { 
@@ -35,25 +58,32 @@
             text-shadow: 0 4px 15px rgba(0,0,0,0.8);
         }
 
+        /* Ajuste para telas muito pequenas (iPhone SE, etc) */
+        @media (max-height: 600px) {
+            h1 { font-size: 2.2rem; }
+            .info-box { margin-bottom: 5vh; }
+        }
+
         .endereco {
-            font-size: 0.9rem; margin-top: 10px; margin-bottom: 30px;
-            background: rgba(255,255,255,0.15); padding: 6px 15px; 
+            font-size: 0.9rem; margin-top: 15px; margin-bottom: 30px;
+            background: rgba(255,255,255,0.15); padding: 8px 20px; 
             border-radius: 50px; backdrop-filter: blur(5px);
+            max-width: 90%;
         }
 
         .btn-entrar {
             background: #facc15; color: black; border: none;
             padding: 18px 40px; border-radius: 50px;
-            font-size: 1.2rem; font-weight: 900; letter-spacing: 1px;
+            font-size: 1.1rem; font-weight: 900; letter-spacing: 1px;
             cursor: pointer; text-decoration: none;
             box-shadow: 0 0 25px rgba(250, 204, 21, 0.5);
             animation: pulse 2s infinite;
             display: flex; align-items: center; gap: 10px;
+            white-space: nowrap; /* Não deixa o texto quebrar */
         }
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
         
-        /* Carregando */
         .loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; font-size: 0.8rem; z-index: 0; }
     </style>
 </head>
@@ -65,12 +95,14 @@
         </div>
 
     <div class="content" id="mainContent" style="display:none">
-        <h1 id="lojaNome">...</h1>
-        <div class="endereco"><span id="lojaEnd">...</span></div>
-        
-        <button class="btn-entrar" onclick="entrar()">
-            CONHECER CATÁLOGO ➜
-        </button>
+        <div class="info-box">
+            <h1 id="lojaNome">...</h1>
+            <div class="endereco"><span id="lojaEnd">...</span></div>
+            
+            <button class="btn-entrar" onclick="entrar()">
+                CONHECER CATÁLOGO ➜
+            </button>
+        </div>
     </div>
 
 <script type="module">
@@ -81,7 +113,6 @@
 
     if (!LOJA_ID) { alert("Loja não encontrada"); window.location.href = "index.html"; }
 
-    // 1. CARREGAR CONFIGURAÇÃO (LEVE)
     const configRef = ref(db, `lojas/${LOJA_ID}/config`);
     
     onValue(configRef, (snap) => {
@@ -92,17 +123,14 @@
             return;
         }
 
-        // Preenche Texto
         document.getElementById('lojaNome').innerText = d.nome || "Bem-vindo";
         document.getElementById('lojaEnd').innerText = d.endereco || "Ver online";
         
-        // Configura Fotos (Array, Objeto ou Capa Única)
         let fotos = [];
         if (Array.isArray(d.fotos_loja)) fotos = d.fotos_loja.filter(x => x);
         else if (d.fotos_loja && typeof d.fotos_loja === 'object') fotos = Object.values(d.fotos_loja);
         else if (d.capa) fotos = [d.capa];
 
-        // Monta Carrossel
         const box = document.getElementById('bgCarousel');
         box.innerHTML = "";
         
@@ -118,11 +146,9 @@
             box.innerHTML = '<div class="slide active" style="background-color:#111"></div>';
         }
 
-        // Mostra o conteúdo
         document.getElementById('mainContent').style.display = 'flex';
     });
 
-    // 2. LÓGICA DO CARROSSEL
     function startCarousel() {
         const slides = document.querySelectorAll('.slide');
         let index = 0;
@@ -130,28 +156,23 @@
             slides[index].classList.remove('active');
             index = (index + 1) % slides.length;
             slides[index].classList.add('active');
-        }, 3000); // 3 segundos por foto
+        }, 3000);
     }
 
-    // 3. AÇÃO DE ENTRAR (CONTA VISITA E REDIRECIONA)
     window.entrar = () => {
         const btn = document.querySelector('.btn-entrar');
         btn.innerHTML = "Acessando...";
         btn.style.opacity = "0.8";
 
-        // Conta a visita no Firebase
         const visitasRef = ref(db, `lojas/${LOJA_ID}/metricas/visitas`);
         
         runTransaction(visitasRef, (atual) => (atual || 0) + 1)
         .then(() => {
-            // Marca sessão para não contar de novo se der F5 no catálogo
             sessionStorage.setItem(`visitou_${LOJA_ID}`, "true");
-            // Redireciona
             window.location.href = `catalogo.html?id=${LOJA_ID}`;
         })
         .catch((err) => {
             console.error("Erro count", err);
-            // Redireciona mesmo com erro (não trava o cliente)
             window.location.href = `catalogo.html?id=${LOJA_ID}`;
         });
     }
