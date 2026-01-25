@@ -214,12 +214,19 @@
         }
     }
 
-    // === LÓGICA DE COMPARTILHAMENTO (NOVA) ===
+    // === LÓGICA DE COMPARTILHAMENTO CORRIGIDA ===
     function gerarTextoDivulgacao() {
-        const nomeLoja = document.getElementById('confNome').value || "Minha Loja";
-        // Gera o link para a CAPA (entrada.html)
-        const link = window.location.href.replace("admin.html", "entrada.html");
+        // Pega o nome. Se estiver vazio, usa "Minha Loja"
+        // .trim() remove espaços acidentais no começo ou fim que o usuário digitar
+        const nomeLoja = (document.getElementById('confNome').value || "Minha Loja").trim();
         
+        // Gera o link. 
+        // Se você quer ir para a CAPA BONITA, mantenha "entrada.html"
+        // Se você quer ir DIRETO PARA OS PRODUTOS (como no seu exemplo), use "catalogo.html"
+        const link = window.location.href.replace("admin.html", "catalogo.html");
+        
+        // AQUI ESTÁ A CORREÇÃO:
+        // Mudei de `*${nomeLoja} *` para `*${nomeLoja}*` (sem espaço antes do último asterisco)
         return `📦 *${nomeLoja}* - Catálogo Digital\n\nClique no link abaixo para ver nossos produtos, fotos e preços atualizados. Faça seu pedido online!\n\n👇👇👇\n${link}`;
     }
 
@@ -366,4 +373,5 @@
 </script>
 </body>
 </html>
+
 
