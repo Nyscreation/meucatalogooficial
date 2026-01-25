@@ -1,31 +1,31 @@
-// ATUALIZADO PARA V8 PARA GARANTIR QUE OS NOVOS LIMITES E O STORAGE SEJAM BAIXADOS
-const CACHE_NAME = 'painel-gestor-v8-final';
+// ATUALIZADO PARA V9 - CORREÇÃO DE CACHE E NOVOS ARQUIVOS
+const CACHE_NAME = 'painel-gestor-v9-fix';
 
 const urlsToCache = [
   './',
-  './admin.html',
   './index.html',
+  './admin.html',
+  './entrada.html', // ADICIONADO: A nova capa precisa ser salva
   './catalogo.html',
   './manifest.json',
   './logo.png',
-  './firebase-config.js' // Essencial para a conexão com o banco
+  './firebase-config.js'
 ];
 
 // 1. Instalação: Baixa os arquivos novos
 self.addEventListener('install', (event) => {
-  // Força o SW a assumir o controle imediatamente, sem esperar fechar o app
-  self.skipWaiting();
+  self.skipWaiting(); // Força a atualização imediata
   
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Cache v8 aberto e arquivos salvos');
+        console.log('Cache v9 aberto e arquivos salvos');
         return cache.addAll(urlsToCache);
       })
   );
 });
 
-// 2. Ativação: Limpa os caches antigos (v7, v6...) para liberar espaço
+// 2. Ativação: Limpa os caches antigos (v8, v7...)
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -39,17 +39,35 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-  // Garante que as abas abertas já usem o novo SW imediatamente
   return self.clients.claim();
 });
 
-// 3. Interceptação: Serve o cache se existir, senão busca na rede
+// 3. Interceptação: Estratégia "Network First" para HTML (Evita travar se atualizar)
+// Para imagens e CSS, usa Cache First. Para HTML, tenta a rede primeiro.
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Se achou no cache, retorna. Se não, busca na internet (ex: imagens do Storage)
-        return response || fetch(event.request);
+  const req = event.request;
+  const url = new URL(req.url);
+
+  // Se for arquivo HTML (admin, entrada, catalogo), tenta baixar da rede primeiro
+  if (req.mode === 'navigate' || url.pathname.endsWith('.html')) {
+    event.respondWith(
+      fetch(req)
+        .then((networkResponse) => {
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(req, networkResponse.clone());
+            return networkResponse;
+          });
+        })
+        .catch(() => {
+          return caches.match(req); // Se estiver offline, usa o cache
+        })
+    );
+  } else {
+    // Para imagens, JS, CSS, fontes: Cache primeiro, depois rede
+    event.respondWith(
+      caches.match(req).then((response) => {
+        return response || fetch(req);
       })
-  );
+    );
+  }
 });
