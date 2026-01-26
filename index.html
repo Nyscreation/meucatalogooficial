@@ -30,13 +30,15 @@
         
         .input-group { margin-bottom: 15px; text-align: left; }
         label { font-size: 0.8rem; font-weight: 600; color: #cbd5e1; margin-left: 5px; display: block; margin-bottom: 5px; }
-        input { 
+        
+        /* Ajuste para inputs de texto */
+        input:not([type="checkbox"]) { 
             width: 100%; padding: 16px; border-radius: 12px; 
             border: 1px solid rgba(255,255,255,0.1); 
             background: rgba(0,0,0,0.3); color: white; 
             font-size: 1rem; outline: none; transition: 0.3s; box-sizing: border-box; 
         }
-        input:focus { border-color: #60a5fa; background: rgba(0,0,0,0.5); }
+        input:not([type="checkbox"]):focus { border-color: #60a5fa; background: rgba(0,0,0,0.5); }
         
         .planos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; }
         .plano-card { 
@@ -65,10 +67,36 @@
         .btn-retornar { background: #10b981; margin-bottom: 10px; }
         .link-sair { color: #f87171; font-size: 0.8rem; text-decoration: underline; cursor: pointer; }
         
+        /* Estilos do Modal de Termos */
+        .modal-termos {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 9999;
+            align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;
+        }
+        .modal-box {
+            background: #1e293b; padding: 25px; border-radius: 16px; width: 100%; max-width: 500px;
+            text-align: left; color: #cbd5e1; border: 1px solid #334155;
+            max-height: 80vh; overflow-y: auto;
+        }
+        .modal-box h2 { color: white; margin-top: 0; }
+        .modal-box p { font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px; }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
+
+    <div id="modalTermos" class="modal-termos">
+        <div class="modal-box">
+            <h2>📜 Termos de Uso</h2>
+            <p>Ao criar sua loja, você concorda que:</p>
+            <p>1. <strong>Disponibilidade:</strong> O sistema opera em nuvem (online). Embora busquemos 99% de estabilidade, falhas técnicas ou manutenções podem ocorrer.</p>
+            <p>2. <strong>Conteúdo:</strong> Você é o único responsável pelos produtos, preços e imagens cadastrados. É proibida a venda de itens ilegais.</p>
+            <p>3. <strong>Pagamento:</strong> O serviço é pré-pago. O não pagamento da renovação (mensal ou anual) resultará no bloqueio automático do acesso administrativo e do catálogo.</p>
+            <p>4. <strong>Dados:</strong> Seus dados de cadastro (WhatsApp e Nome) são utilizados exclusivamente para o funcionamento da plataforma e contato de suporte.</p>
+            <button onclick="document.getElementById('modalTermos').style.display='none'" style="margin-top:10px;">LI E ENTENDI</button>
+        </div>
+    </div>
 
     <div class="container">
         <div id="autoLoginBox">
@@ -109,6 +137,13 @@
                 </div>
             </div>
 
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; text-align: left;">
+                <input type="checkbox" id="checkTermos" style="width: 20px; height: 20px; cursor: pointer;">
+                <span style="font-size: 0.85rem; color: #cbd5e1;">
+                    Li e aceito os <a href="#" onclick="abrirTermos(event)" style="color: #60a5fa; text-decoration: underline;">Termos de Uso</a>
+                </span>
+            </div>
+
             <button onclick="contratar()" id="btnCriar">
                 <i class='bx bxl-whatsapp' style="font-size: 1.4rem;"></i> CRIAR AGORA
             </button>
@@ -138,6 +173,12 @@
                 localStorage.removeItem('minha_loja_id');
                 location.reload();
             }
+        }
+
+        // FUNÇÃO PARA ABRIR O MODAL DE TERMOS
+        window.abrirTermos = (e) => {
+            e.preventDefault();
+            document.getElementById('modalTermos').style.display = 'flex';
         }
 
         // ===========================================
@@ -185,6 +226,13 @@
         }
 
         window.contratar = async () => {
+            // VALIDAÇÃO DOS TERMOS DE USO
+            const check = document.getElementById('checkTermos');
+            if(!check.checked) {
+                alert("⚠️ Você precisa aceitar os Termos de Uso para criar sua loja.");
+                return;
+            }
+
             const btn = document.getElementById('btnCriar');
             const nome = document.getElementById('nomeLoja').value;
             const zap = document.getElementById('zapLoja').value;
@@ -210,7 +258,8 @@
                             status: "pendente",
                             codigo_secreto: codigoAtivacao,
                             plano_escolhido: selectedPlan,
-                            validade: new Date().toISOString()
+                            validade: new Date().toISOString(),
+                            aceitou_termos: new Date().toISOString() // REGISTRA O ACEITE
                         },
                         produtos: {}
                     });
@@ -218,7 +267,7 @@
                     localStorage.setItem('minha_loja_id', slug);
 
                     const seuNumero = "5597984431811"; 
-                    const msg = `Olá! Quero ativar a loja *${nome}* no plano *${selectedPlan.toUpperCase()}*. Aguardo a chave.`;
+                    const msg = `Olá! Quero ativar a loja *${nome}* no plano *${selectedPlan.toUpperCase()}*. Li e aceito os termos. Aguardo a chave.`;
                     window.open(`https://wa.me/${seuNumero}?text=${encodeURIComponent(msg)}`, '_blank');
                     
                     // Redireciona para o admin (que vai mostrar a tela de bloqueio)
