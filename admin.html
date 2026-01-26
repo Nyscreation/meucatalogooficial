@@ -379,47 +379,68 @@
     window.deletar = async (id) => { if(confirm("Apagar?")) await remove(ref(db, `lojas/${LOJA_ID}/produtos/${id}`)); }
 
     // ==========================================
-    // 🎨 MÁQUINA DE MARKETING (CANVAS)
+    // 🎨 MÁQUINA DE MARKETING (CORRIGIDO)
     // ==========================================
     window.abrirGerador = (id, nome, preco, imgUrl) => {
-        document.getElementById('modalMkt').style.display = "flex";
+        const modal = document.getElementById('modalMkt');
         const canvas = document.getElementById('canvasMkt');
         const ctx = canvas.getContext('2d');
         
-        // Fundo
+        modal.style.display = "flex";
+
+        // 1. Desenha o Fundo (Enquanto a imagem carrega)
         const grad = ctx.createLinearGradient(0, 0, 0, 1920);
         grad.addColorStop(0, '#0f172a');
         grad.addColorStop(1, '#334155');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 1080, 1920);
 
-        // Texto Loja
-        ctx.fillStyle = "#fff";
-        ctx.font = "bold 60px Inter, sans-serif";
+        // Texto "Carregando..."
+        ctx.fillStyle = "rgba(255,255,255,0.2)";
+        ctx.font = "40px Inter";
         ctx.textAlign = "center";
-        ctx.fillText(LOJA_NOME_GLOBAL.toUpperCase(), 540, 150);
+        ctx.fillText("Gerando imagem...", 540, 960);
 
-        // Imagem do Produto
+        // 2. Prepara a Imagem
         const img = new Image();
-        img.crossOrigin = "anonymous"; // Importante para imagens do Firebase
-        img.src = imgUrl;
-        
+        img.crossOrigin = "anonymous"; // Essencial para Firebase
+
+        // TRUQUE DO CACHE: Adiciona um timestamp para forçar recarregamento limpo
+        // Verifica se a URL já tem '?' para usar '&', senão usa '?'
+        const separador = imgUrl.includes('?') ? '&' : '?';
+        img.src = imgUrl + separador + 'cache=' + new Date().getTime();
+
         img.onload = () => {
-            // Desenha imagem centralizada (corte quadrado)
-            // Aspect Ratio fit
+            // Limpa o texto de carregamento e redesenha o fundo
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 1080, 1920);
+
+            // Título da Loja
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 60px Inter, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(LOJA_NOME_GLOBAL.toUpperCase(), 540, 150);
+
+            // Cálculos para Foto Quadrada (Crop Centralizado)
             const size = 900;
             const x = (1080 - size) / 2;
             const y = 400;
             
-            // Simples crop (center)
             let sx, sy, sw, sh;
+            // Lógica de corte (Crop) para centralizar a imagem
             if (img.width > img.height) {
-                sh = img.height; sw = img.height; sx = (img.width - img.height) / 2; sy = 0;
+                sh = img.height; 
+                sw = img.height; 
+                sx = (img.width - img.height) / 2; 
+                sy = 0;
             } else {
-                sw = img.width; sh = img.width; sy = (img.height - img.width) / 2; sx = 0;
+                sw = img.width; 
+                sh = img.width; 
+                sy = (img.height - img.width) / 2; 
+                sx = 0;
             }
             
-            // Borda da foto
+            // Desenha a Imagem Recortada e Arredondada
             ctx.save();
             ctx.beginPath();
             ctx.roundRect(x, y, size, size, 40);
@@ -427,7 +448,7 @@
             ctx.drawImage(img, sx, sy, sw, sh, x, y, size, size);
             ctx.restore();
             
-            // Borda Branca
+            // Borda Branca sobre a foto
             ctx.strokeStyle = "white";
             ctx.lineWidth = 20;
             ctx.strokeRect(x, y, size, size);
@@ -435,14 +456,18 @@
             // Nome do Produto
             ctx.font = "bold 90px Inter, sans-serif";
             ctx.fillStyle = "white";
+            // Quebra de linha simples se o nome for muito grande
+            if (ctx.measureText(nome).width > 900) {
+                 ctx.font = "bold 70px Inter, sans-serif";
+            }
             ctx.fillText(nome, 540, 1450);
 
-            // Preço (Etiqueta Amarela)
+            // Etiqueta de Preço Amarela
             const precoTexto = "R$ " + parseFloat(preco).toFixed(2).replace('.', ',');
             ctx.font = "bold 130px Inter, sans-serif";
             const larguraPreco = ctx.measureText(precoTexto).width;
             
-            ctx.fillStyle = "#facc15";
+            ctx.fillStyle = "#facc15"; // Amarelo
             ctx.beginPath();
             ctx.roundRect(540 - (larguraPreco/2) - 40, 1520, larguraPreco + 80, 180, 20);
             ctx.fill();
@@ -451,8 +476,9 @@
             ctx.textBaseline = "middle";
             ctx.fillText(precoTexto, 540, 1610);
 
-            // Chamada para Ação
-            ctx.fillStyle = "#a855f7"; // Roxo Marketing
+            // Botão "Link na Bio" (Chamada para Ação)
+            ctx.textBaseline = "alphabetic"; // Reseta baseline
+            ctx.fillStyle = "#a855f7"; // Roxo
             ctx.beginPath();
             ctx.roundRect(140, 1750, 800, 100, 50);
             ctx.fill();
@@ -460,6 +486,17 @@
             ctx.font = "bold 50px Inter, sans-serif";
             ctx.fillStyle = "white";
             ctx.fillText("PEÇA PELO LINK NA BIO 📲", 540, 1815);
+        };
+
+        img.onerror = (err) => {
+            console.error("Erro ao carregar imagem para o canvas:", err);
+            alert("Não foi possível carregar a imagem deste produto para o gerador. Tente enviar a foto novamente.");
+            // Desenha pelo menos o texto se a imagem falhar
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 1080, 1920);
+            ctx.fillStyle = "white";
+            ctx.textAlign = "center";
+            ctx.fillText(nome, 540, 960);
         };
     }
 
@@ -501,3 +538,4 @@
 </script>
 </body>
 </html>
+
