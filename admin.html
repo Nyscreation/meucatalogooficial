@@ -175,7 +175,7 @@
                 <i class='bx bx-copy'></i> Copiar Link
             </button>
         </div>
-        <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">Versão 9.2 Blob Fix</div>
+        <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">Versão 11.0 Fix</div>
     </div>
 
     <nav class="bottom-nav">
@@ -193,6 +193,9 @@
     let PLANO_ATUAL = "mensal"; 
     let TOTAL_PRODUTOS = 0;
     let LOJA_NOME_GLOBAL = "";
+    
+    // CACHE GLOBAL DE PRODUTOS
+    window.PRODUTOS_CACHE = {};
 
     if (!LOJA_ID) {
         const savedId = localStorage.getItem('minha_loja_id');
@@ -259,11 +262,9 @@
             return;
         }
 
-        // BLOQUEIO
         if (data.status === "pendente") {
             const MEU_PIX = "6485220a-c85c-4a83-a2b3-e3e230827e8c";
             const MEU_ZAP = "5597984431811"; 
-
             document.body.innerHTML = `
                 <div style="min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; text-align:center; padding:20px; background: linear-gradient(135deg, #0f172a 0%, #000000 100%);">
                     <i class='bx bxs-lock-alt' style="font-size: 4rem; color: #fbbf24; margin-bottom: 20px;"></i>
@@ -281,7 +282,6 @@
                         <button onclick="ativarLoja()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">LIBERAR ACESSO</button>
                     </div>
                 </div>`;
-            
             window.copiarPix = () => { navigator.clipboard.writeText(MEU_PIX); alert("Chave Pix copiada!"); }
             window.enviarComprovante = () => { const msg = `Olá! Desejo Solicitar o Código de Ativação da Minha Loja *${data.nome || LOJA_ID}*. Aguardo meu código.`; window.open(`https://wa.me/${MEU_ZAP}?text=${encodeURIComponent(msg)}`, '_blank'); }
             window.ativarLoja = async () => { const input = document.getElementById('inputCodigo'); if(input.value.trim().toUpperCase() == data.codigo_secreto) { const hoje = new Date(); hoje.setDate(hoje.getDate() + (data.plano_escolhido === 'anual' ? 365 : 30)); await set(configRef, { ...data, status: "ativo", validade: hoje.toISOString() }); alert("✅ Sucesso! Bem-vindo ao sistema."); window.location.reload(); } else { alert("❌ Código inválido! Verifique no seu WhatsApp."); } }
@@ -307,7 +307,6 @@
     const metricasRef = ref(db, `lojas/${LOJA_ID}/metricas/visitas`);
     onValue(metricasRef, (snap) => { if(document.getElementById('txtVisitas')) document.getElementById('txtVisitas').innerText = snap.val() || 0; });
 
-    // SALVAR CONFIG
     document.getElementById('btnSalvarConfig').addEventListener('click', async () => {
         const btn = document.getElementById('btnSalvarConfig');
         btn.innerHTML = "⏳ Salvando..."; btn.disabled = true;
@@ -321,15 +320,16 @@
         } catch(e) { alert("Erro: " + e.message); } finally { btn.innerText = "Salvar Tudo"; btn.disabled = false; }
     });
 
-    // LISTA DE PRODUTOS
     const produtosRef = ref(db, `lojas/${LOJA_ID}/produtos`);
     onValue(produtosRef, (snapshot) => {
         const div = document.getElementById('lista'); div.innerHTML = "";
         const data = snapshot.val();
         if(data) {
+            window.PRODUTOS_CACHE = data; // SALVA NO CACHE GLOBAL
             const chaves = Object.keys(data); TOTAL_PRODUTOS = chaves.length; 
             chaves.reverse().forEach(key => { 
                 const p = data[key]; 
+                // AQUI: Usamos apenas o ID no botão, sem passar links complexos
                 div.innerHTML += `
                 <div class="product-item">
                     <img src="${p.img}">
@@ -337,7 +337,7 @@
                         <strong>${p.nome}</strong>
                         <span>R$ ${p.preco}</span>
                     </div>
-                    <button class="btn-mkt" onclick="abrirGerador('${key}', '${p.nome.replace(/'/g, "")}', '${p.preco}', '${p.img}')" title="Criar Post">
+                    <button class="btn-mkt" onclick="abrirGerador('${key}')" title="Criar Post">
                         <i class='bx bxs-megaphone'></i>
                     </button>
                     <button class="btn-del" onclick="deletar('${key}')">
@@ -349,7 +349,6 @@
         atualizarBadgeLimite();
     });
 
-    // ADICIONAR PRODUTO
     document.getElementById('btnSalvarProd').addEventListener('click', async () => {
         const limite = (PLANO_ATUAL === 'anual') ? 100 : 50;
         if (TOTAL_PRODUTOS >= limite) { alert(`Limite do plano ${PLANO_ATUAL} atingido!`); return; }
@@ -377,54 +376,54 @@
     window.deletar = async (id) => { if(confirm("Apagar?")) await remove(ref(db, `lojas/${LOJA_ID}/produtos/${id}`)); }
 
     // ==========================================
-    // 🎨 MÁQUINA DE MARKETING (Versão Blob / Anti-Bloqueio)
+    // 🎨 MÁQUINA DE MARKETING (BLOB COM FALLBACK SEGURO)
     // ==========================================
-    window.abrirGerador = async (id, nome, preco, imgUrl) => {
+    window.abrirGerador = async (id) => {
+        // Recupera dados do Cache Global (Segurança contra erro de string)
+        const p = window.PRODUTOS_CACHE[id];
+        if(!p) return alert("Erro ao carregar produto.");
+        
+        const nome = p.nome;
+        const preco = p.preco;
+        const imgUrl = p.img;
+
         const modal = document.getElementById('modalMkt');
         const canvas = document.getElementById('canvasMkt');
         const ctx = canvas.getContext('2d');
         
         modal.style.display = "flex";
 
-        // 1. Desenha o Fundo
+        // Fundo
         const grad = ctx.createLinearGradient(0, 0, 0, 1920);
         grad.addColorStop(0, '#0f172a');
         grad.addColorStop(1, '#334155');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 1080, 1920);
 
-        // Texto "Baixando..."
         ctx.fillStyle = "rgba(255,255,255,0.2)";
         ctx.font = "40px Inter";
         ctx.textAlign = "center";
-        ctx.fillText("Baixando imagem...", 540, 960);
+        ctx.fillText("Gerando...", 540, 960);
 
-        // FUNÇÃO DE DESENHO (Comun)
         const desenharCard = (imgSource, imagemValida) => {
-            // Limpa
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, 1080, 1920);
 
-            // Título Loja
+            // Nome da Loja
             ctx.fillStyle = "#fff";
             ctx.font = "bold 60px Inter, sans-serif";
             ctx.textAlign = "center";
             ctx.fillText(LOJA_NOME_GLOBAL.toUpperCase(), 540, 150);
 
-            // Área da Foto
+            // Foto
             const size = 900;
             const x = (1080 - size) / 2;
             const y = 400;
 
             if (imagemValida && imgSource) {
                 let sx, sy, sw, sh;
-                if (imgSource.width > imgSource.height) { 
-                    sh = imgSource.height; sw = imgSource.height; 
-                    sx = (imgSource.width - imgSource.height) / 2; sy = 0; 
-                } else { 
-                    sw = imgSource.width; sh = imgSource.width; 
-                    sy = (imgSource.height - imgSource.width) / 2; sx = 0; 
-                }
+                if (imgSource.width > imgSource.height) { sh = imgSource.height; sw = imgSource.height; sx = (imgSource.width - imgSource.height) / 2; sy = 0; } 
+                else { sw = imgSource.width; sh = imgSource.width; sy = (imgSource.height - imgSource.width) / 2; sx = 0; }
                 
                 ctx.save();
                 ctx.beginPath();
@@ -433,7 +432,6 @@
                 ctx.drawImage(imgSource, sx, sy, sw, sh, x, y, size, size);
                 ctx.restore();
             } else {
-                // FALLBACK
                 ctx.fillStyle = "#1e293b";
                 ctx.beginPath();
                 ctx.roundRect(x, y, size, size, 40);
@@ -445,18 +443,15 @@
                 ctx.fillText("Foto indisponível", 540, y + (size/2) + 100);
             }
             
-            // Borda
             ctx.strokeStyle = "white";
             ctx.lineWidth = 20;
             ctx.strokeRect(x, y, size, size);
 
-            // Nome Produto
             ctx.font = "bold 90px Inter, sans-serif";
             ctx.fillStyle = "white";
             if (ctx.measureText(nome).width > 900) ctx.font = "bold 70px Inter, sans-serif";
             ctx.fillText(nome, 540, 1450);
 
-            // Preço
             const precoTexto = "R$ " + parseFloat(preco).toFixed(2).replace('.', ',');
             ctx.font = "bold 130px Inter, sans-serif";
             const larguraPreco = ctx.measureText(precoTexto).width;
@@ -470,7 +465,6 @@
             ctx.textBaseline = "middle";
             ctx.fillText(precoTexto, 540, 1610);
 
-            // Botão
             ctx.textBaseline = "alphabetic"; 
             ctx.fillStyle = "#a855f7";
             ctx.beginPath();
@@ -481,25 +475,19 @@
             ctx.fillText("PEÇA PELO LINK NA BIO 📲", 540, 1815);
         };
 
-        // 2. TENTA BAIXAR COMO BLOB
+        // Tenta baixar via fetch (Bypass Cache SW)
         try {
-            const response = await fetch(imgUrl, { method: 'GET', mode: 'cors', cache: 'no-store' });
+            const response = await fetch(imgUrl, { method: 'GET', cache: 'no-store' });
             if (!response.ok) throw new Error('Falha no fetch');
-            
             const blob = await response.blob();
             const localUrl = URL.createObjectURL(blob);
             
             const img = new Image();
-            img.onload = () => {
-                desenharCard(img, true);
-                URL.revokeObjectURL(localUrl);
-            };
+            img.onload = () => { desenharCard(img, true); URL.revokeObjectURL(localUrl); };
             img.onerror = () => desenharCard(null, false);
             img.src = localUrl;
-
         } catch (e) {
-            console.error("Erro no Blob:", e);
-            // Última tentativa: método padrão
+            console.error("Tentando método padrão...");
             const imgBackup = new Image();
             imgBackup.crossOrigin = "anonymous";
             imgBackup.onload = () => desenharCard(imgBackup, true);
