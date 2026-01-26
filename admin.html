@@ -175,7 +175,7 @@
                 <i class='bx bx-copy'></i> Copiar Link
             </button>
         </div>
-        <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">Versão 9.0 Marketing</div>
+        <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">Versão 9.1 Stable</div>
     </div>
 
     <nav class="bottom-nav">
@@ -259,7 +259,7 @@
             return;
         }
 
-        // BLOQUEIO E ATIVAÇÃO
+        // BLOQUEIO
         if (data.status === "pendente") {
             const MEU_PIX = "6485220a-c85c-4a83-a2b3-e3e230827e8c";
             const MEU_ZAP = "5597984431811"; 
@@ -290,7 +290,6 @@
 
         if(new Date() > (data.validade ? new Date(data.validade) : new Date())) { document.body.innerHTML = "<h1 style='color:white;text-align:center;padding:50px'>SEU PLANO VENCEU<br><br>Entre em contato para renovar.</h1>"; return; }
 
-        // DADOS CARREGADOS
         PLANO_ATUAL = data.plano_escolhido || "mensal";
         LOJA_NOME_GLOBAL = data.nome || "Minha Loja";
         if (!document.getElementById('confNome')) { window.location.reload(); return; }
@@ -322,7 +321,7 @@
         } catch(e) { alert("Erro: " + e.message); } finally { btn.innerText = "Salvar Tudo"; btn.disabled = false; }
     });
 
-    // LISTA DE PRODUTOS + BOTÃO MÁGICO DE MARKETING
+    // LISTA DE PRODUTOS
     const produtosRef = ref(db, `lojas/${LOJA_ID}/produtos`);
     onValue(produtosRef, (snapshot) => {
         const div = document.getElementById('lista'); div.innerHTML = "";
@@ -331,7 +330,6 @@
             const chaves = Object.keys(data); TOTAL_PRODUTOS = chaves.length; 
             chaves.reverse().forEach(key => { 
                 const p = data[key]; 
-                // AQUI ESTÁ A ATUALIZAÇÃO: Adicionado o botão btn-mkt (Megafone)
                 div.innerHTML += `
                 <div class="product-item">
                     <img src="${p.img}">
@@ -379,7 +377,7 @@
     window.deletar = async (id) => { if(confirm("Apagar?")) await remove(ref(db, `lojas/${LOJA_ID}/produtos/${id}`)); }
 
     // ==========================================
-    // 🎨 MÁQUINA DE MARKETING (CORRIGIDO)
+    // 🎨 MÁQUINA DE MARKETING (SEGURA)
     // ==========================================
     window.abrirGerador = (id, nome, preco, imgUrl) => {
         const modal = document.getElementById('modalMkt');
@@ -388,86 +386,84 @@
         
         modal.style.display = "flex";
 
-        // 1. Desenha o Fundo (Enquanto a imagem carrega)
+        // 1. Desenha o Fundo
         const grad = ctx.createLinearGradient(0, 0, 0, 1920);
         grad.addColorStop(0, '#0f172a');
         grad.addColorStop(1, '#334155');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 1080, 1920);
 
-        // Texto "Carregando..."
+        // Texto de Carregando
         ctx.fillStyle = "rgba(255,255,255,0.2)";
         ctx.font = "40px Inter";
         ctx.textAlign = "center";
-        ctx.fillText("Gerando imagem...", 540, 960);
+        ctx.fillText("Preparando...", 540, 960);
 
-        // 2. Prepara a Imagem
+        // 2. Tenta Carregar Imagem
         const img = new Image();
-        img.crossOrigin = "anonymous"; // Essencial para Firebase
+        img.crossOrigin = "anonymous"; // Importante
+        img.src = imgUrl; // REMOVIDO O CACHE BUSTER PARA NÃO QUEBRAR O LINK
 
-        // TRUQUE DO CACHE: Adiciona um timestamp para forçar recarregamento limpo
-        // Verifica se a URL já tem '?' para usar '&', senão usa '?'
-        const separador = imgUrl.includes('?') ? '&' : '?';
-        img.src = imgUrl + separador + 'cache=' + new Date().getTime();
-
-        img.onload = () => {
-            // Limpa o texto de carregamento e redesenha o fundo
+        // FUNÇÃO DE DESENHO (Reutilizável)
+        const desenharCard = (imagemValida) => {
+            // Limpa
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, 1080, 1920);
 
-            // Título da Loja
+            // Título Loja
             ctx.fillStyle = "#fff";
             ctx.font = "bold 60px Inter, sans-serif";
             ctx.textAlign = "center";
             ctx.fillText(LOJA_NOME_GLOBAL.toUpperCase(), 540, 150);
 
-            // Cálculos para Foto Quadrada (Crop Centralizado)
+            // Área da Foto
             const size = 900;
             const x = (1080 - size) / 2;
             const y = 400;
-            
-            let sx, sy, sw, sh;
-            // Lógica de corte (Crop) para centralizar a imagem
-            if (img.width > img.height) {
-                sh = img.height; 
-                sw = img.height; 
-                sx = (img.width - img.height) / 2; 
-                sy = 0;
+
+            if (imagemValida) {
+                let sx, sy, sw, sh;
+                if (img.width > img.height) { sh = img.height; sw = img.height; sx = (img.width - img.height) / 2; sy = 0; } 
+                else { sw = img.width; sh = img.width; sy = (img.height - img.width) / 2; sx = 0; }
+                
+                ctx.save();
+                ctx.beginPath();
+                ctx.roundRect(x, y, size, size, 40);
+                ctx.clip();
+                ctx.drawImage(img, sx, sy, sw, sh, x, y, size, size);
+                ctx.restore();
             } else {
-                sw = img.width; 
-                sh = img.width; 
-                sy = (img.height - img.width) / 2; 
-                sx = 0;
+                // FALLBACK: Desenha um quadrado cinza se a imagem falhar
+                ctx.fillStyle = "#1e293b";
+                ctx.beginPath();
+                ctx.roundRect(x, y, size, size, 40);
+                ctx.fill();
+                
+                ctx.fillStyle = "#475569";
+                ctx.font = "150px Inter";
+                ctx.fillText("📷", 540, y + (size/2)); // Emoji de Câmera
+                
+                ctx.font = "40px Inter";
+                ctx.fillText("Foto indisponível", 540, y + (size/2) + 100);
             }
             
-            // Desenha a Imagem Recortada e Arredondada
-            ctx.save();
-            ctx.beginPath();
-            ctx.roundRect(x, y, size, size, 40);
-            ctx.clip();
-            ctx.drawImage(img, sx, sy, sw, sh, x, y, size, size);
-            ctx.restore();
-            
-            // Borda Branca sobre a foto
+            // Borda
             ctx.strokeStyle = "white";
             ctx.lineWidth = 20;
             ctx.strokeRect(x, y, size, size);
 
-            // Nome do Produto
+            // Nome Produto
             ctx.font = "bold 90px Inter, sans-serif";
             ctx.fillStyle = "white";
-            // Quebra de linha simples se o nome for muito grande
-            if (ctx.measureText(nome).width > 900) {
-                 ctx.font = "bold 70px Inter, sans-serif";
-            }
+            if (ctx.measureText(nome).width > 900) ctx.font = "bold 70px Inter, sans-serif";
             ctx.fillText(nome, 540, 1450);
 
-            // Etiqueta de Preço Amarela
+            // Preço
             const precoTexto = "R$ " + parseFloat(preco).toFixed(2).replace('.', ',');
             ctx.font = "bold 130px Inter, sans-serif";
             const larguraPreco = ctx.measureText(precoTexto).width;
             
-            ctx.fillStyle = "#facc15"; // Amarelo
+            ctx.fillStyle = "#facc15";
             ctx.beginPath();
             ctx.roundRect(540 - (larguraPreco/2) - 40, 1520, larguraPreco + 80, 180, 20);
             ctx.fill();
@@ -476,9 +472,9 @@
             ctx.textBaseline = "middle";
             ctx.fillText(precoTexto, 540, 1610);
 
-            // Botão "Link na Bio" (Chamada para Ação)
-            ctx.textBaseline = "alphabetic"; // Reseta baseline
-            ctx.fillStyle = "#a855f7"; // Roxo
+            // Botão
+            ctx.textBaseline = "alphabetic"; 
+            ctx.fillStyle = "#a855f7";
             ctx.beginPath();
             ctx.roundRect(140, 1750, 800, 100, 50);
             ctx.fill();
@@ -488,15 +484,10 @@
             ctx.fillText("PEÇA PELO LINK NA BIO 📲", 540, 1815);
         };
 
-        img.onerror = (err) => {
-            console.error("Erro ao carregar imagem para o canvas:", err);
-            alert("Não foi possível carregar a imagem deste produto para o gerador. Tente enviar a foto novamente.");
-            // Desenha pelo menos o texto se a imagem falhar
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, 1080, 1920);
-            ctx.fillStyle = "white";
-            ctx.textAlign = "center";
-            ctx.fillText(nome, 540, 960);
+        img.onload = () => desenharCard(true);
+        img.onerror = () => {
+            console.log("Erro ao carregar imagem para Canvas (provavelmente CORS). Usando Fallback.");
+            desenharCard(false); // Desenha sem foto
         };
     }
 
@@ -506,31 +497,16 @@
         const canvas = document.getElementById('canvasMkt');
         const linkLoja = window.location.href.replace("admin.html", "entrada.html");
         
-        // Copiar Link Primeiro
         navigator.clipboard.writeText(`Olha essa oferta da ${LOJA_NOME_GLOBAL}!\nPeça aqui: ${linkLoja}`);
         showToast("Link copiado! Postando...");
 
         canvas.toBlob(async (blob) => {
             const file = new File([blob], "oferta.png", { type: "image/png" });
-            
-            // Tenta usar o compartilhamento nativo do celular
             if (navigator.share) {
-                try {
-                    await navigator.share({
-                        files: [file],
-                        title: 'Oferta Especial',
-                        text: `Olha essa oferta da ${LOJA_NOME_GLOBAL}! Peça aqui: ${linkLoja}`
-                    });
-                } catch (error) {
-                    console.log("Erro ao compartilhar ou cancelado", error);
-                }
+                try { await navigator.share({ files: [file], title: 'Oferta Especial', text: `Olha essa oferta da ${LOJA_NOME_GLOBAL}! Peça aqui: ${linkLoja}` }); } 
+                catch (error) { console.log("Erro share", error); }
             } else {
-                // Se for PC, baixa a imagem
-                const link = document.createElement('a');
-                link.download = 'oferta-status.png';
-                link.href = canvas.toDataURL();
-                link.click();
-                alert("Imagem baixada! Agora poste no seu Status.");
+                const link = document.createElement('a'); link.download = 'oferta-status.png'; link.href = canvas.toDataURL(); link.click();
             }
         });
     }
@@ -538,4 +514,3 @@
 </script>
 </body>
 </html>
-
