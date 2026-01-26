@@ -15,7 +15,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
     
     <style>
-        :root { --primary: #3b82f6; --text: #f1f5f9; --text-muted: #94a3b8; --glass-bg: rgba(255, 255, 255, 0.08); --glass-border: rgba(255, 255, 255, 0.1); --input-bg: rgba(0, 0, 0, 0.3); }
+        :root { --primary: #3b82f6; --text: #f1f5f9; --text-muted: #94a3b8; --glass-bg: rgba(255, 255, 255, 0.08); --glass-border: rgba(255, 255, 255, 0.1); --input-bg: rgba(0, 0, 0, 0.3); --marketing: #a855f7; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; } 
         body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0f172a 0%, #172554 100%); background-attachment: fixed; margin: 0; padding: 0; padding-bottom: 90px; color: var(--text); -webkit-font-smoothing: antialiased; min-height: 100vh; }
         .app-header { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 15px 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
@@ -34,7 +34,10 @@
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
         .btn-outline { border: 2px solid var(--primary); background: transparent; color: var(--primary); }
         .btn-zap-share { background: #25D366; color: white; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); }
-        .btn-del { color: #f87171; background: rgba(239, 68, 68, 0.1); border: none; padding: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        
+        .btn-del { color: #f87171; background: rgba(239, 68, 68, 0.1); border: none; padding: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; margin-left: 5px; }
+        .btn-mkt { color: var(--marketing); background: rgba(168, 85, 247, 0.15); border: none; padding: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        
         .product-item { display: flex; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--glass-border); }
         .product-item img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; margin-right: 15px; background: #334155; }
         .info { flex: 1; }
@@ -54,11 +57,28 @@
         .foto-slot { aspect-ratio: 1; background: #334155; border-radius: 8px; border: 1px dashed var(--glass-border); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; cursor: pointer; }
         .foto-slot img { width: 100%; height: 100%; object-fit: cover; }
         .foto-slot i { font-size: 1.5rem; color: var(--text-muted); }
+
+        /* MODAL MARKETING */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; flex-direction: column; padding: 20px; }
+        .modal-content { background: var(--glass-bg); padding: 20px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--glass-border); }
+        canvas { width: 100%; height: auto; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
     <div id="toast" class="toast"><i class='bx bx-check-circle'></i> <span>Salvo com sucesso!</span></div>
+
+    <div id="modalMkt" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:white;">Postar no Status 📸</h3>
+            <p style="font-size:0.8rem; color:#ccc; margin-bottom:15px;">A imagem abaixo foi gerada automaticamente.</p>
+            <canvas id="canvasMkt" width="1080" height="1920"></canvas>
+            <button onclick="compartilharImagem()" class="btn btn-zap-share" style="margin-bottom:10px;">
+                <i class='bx bxl-whatsapp'></i> Compartilhar Imagem
+            </button>
+            <button onclick="fecharMkt()" class="btn btn-outline" style="border-color: #64748b; color: #cbd5e1;">Fechar</button>
+        </div>
+    </div>
 
     <header class="app-header">
         <div>
@@ -81,7 +101,7 @@
             <h2>Dicas</h2>
             <ul style="padding-left: 20px; color: var(--text-muted); font-size: 0.9rem;">
                 <li>Divulgue o link no Instagram Bio.</li>
-                <li>Mande o link no WhatsApp.</li>
+                <li>Use o botão roxo nos produtos para criar posts de Status.</li>
             </ul>
         </div>
     </div>
@@ -155,7 +175,7 @@
                 <i class='bx bx-copy'></i> Copiar Link
             </button>
         </div>
-        <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">Versão 8.0 Seguro</div>
+        <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">Versão 9.0 Marketing</div>
     </div>
 
     <nav class="bottom-nav">
@@ -172,6 +192,7 @@
     let LOJA_ID = params.get('id');
     let PLANO_ATUAL = "mensal"; 
     let TOTAL_PRODUTOS = 0;
+    let LOJA_NOME_GLOBAL = "";
 
     if (!LOJA_ID) {
         const savedId = localStorage.getItem('minha_loja_id');
@@ -232,80 +253,47 @@
     onValue(configRef, (snapshot) => {
         const data = snapshot.val();
         
-        // 1. Se não existir dados, sai
         if (!data) {
             alert("Erro: Loja não encontrada.");
             window.location.href = "index.html";
             return;
         }
 
-        // 2. SISTEMA DE TRAVA (Bloqueia TUDO se for pendente)
+        // BLOQUEIO E ATIVAÇÃO
         if (data.status === "pendente") {
             const MEU_PIX = "6485220a-c85c-4a83-a2b3-e3e230827e8c";
             const MEU_ZAP = "5597984431811"; 
 
-            // Sobrescreve o corpo do site com a TELA DE ATIVAÇÃO
             document.body.innerHTML = `
                 <div style="min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; text-align:center; padding:20px; background: linear-gradient(135deg, #0f172a 0%, #000000 100%);">
                     <i class='bx bxs-lock-alt' style="font-size: 4rem; color: #fbbf24; margin-bottom: 20px;"></i>
                     <h1 style="margin:0; font-size:1.8rem;">Ativar Loja</h1>
                     <p style="color:#94a3b8; margin-bottom: 30px;">Aguardando pagamento para liberação.</p>
-                    
                     <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; border: 1px dashed #fbbf24; width: 100%; max-width: 350px; margin-bottom: 20px;">
                         <p style="margin:0 0 10px 0; font-size: 0.9rem; color: #cbd5e1;">Chave Pix (Copia e Cola):</p>
-                        <div style="background: #0f172a; padding: 10px; border-radius: 8px; word-break: break-all; font-family: monospace; color: #fbbf24; margin-bottom: 10px; user-select: all; font-size:0.9rem;">
-                            ${MEU_PIX}
-                        </div>
-                        <button onclick="copiarPix()" class="btn" style="background: #fbbf24; color: black; font-weight:bold; width:100%; border:none; padding:12px; border-radius:8px; cursor:pointer;">
-                            <i class='bx bx-copy'></i> COPIAR PIX
-                        </button>
+                        <div style="background: #0f172a; padding: 10px; border-radius: 8px; word-break: break-all; font-family: monospace; color: #fbbf24; margin-bottom: 10px; user-select: all; font-size:0.9rem;">${MEU_PIX}</div>
+                        <button onclick="copiarPix()" class="btn" style="background: #fbbf24; color: black; font-weight:bold; width:100%; border:none; padding:12px; border-radius:8px; cursor:pointer;"><i class='bx bx-copy'></i> COPIAR PIX</button>
                     </div>
-
-                    <button onclick="enviarComprovante()" class="btn" style="background: #25D366; color: white; margin-bottom: 30px; max-width: 350px; width:100%; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
-                        <i class='bx bxl-whatsapp' style="font-size: 1.2rem;"></i> SOLICITAR CÓDIGO 
-                    </button>
-
+                    <button onclick="enviarComprovante()" class="btn" style="background: #25D366; color: white; margin-bottom: 30px; max-width: 350px; width:100%; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;"><i class='bx bxl-whatsapp' style="font-size: 1.2rem;"></i> SOLICITAR CÓDIGO </button>
                     <div style="width: 100%; max-width: 350px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
                         <p style="font-size: 0.9rem; color: #fff; margin-bottom: 10px;">Insira seu código de ativação:</p>
                         <input type="text" id="inputCodigo" placeholder="Ex: K9X2" style="padding:15px; border-radius:10px; width:100%; text-align:center; margin-bottom:10px; border: 1px solid #334155; background: rgba(0,0,0,0.3); color: #facc15; outline: none; font-size: 1.5rem; text-transform:uppercase; letter-spacing: 5px; font-weight:bold;">
                         <button onclick="ativarLoja()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">LIBERAR ACESSO</button>
                     </div>
                 </div>`;
-
-            // Funções exclusivas da tela de bloqueio
-            window.copiarPix = () => { navigator.clipboard.writeText(MEU_PIX); alert("Chave Pix copiada!"); }
             
-            window.enviarComprovante = () => {
-                const msg = `Olá! Desejo Solicitar o Código de Ativação da Minha Loja *${data.nome || LOJA_ID}*. Aguardo meu código.`;
-                window.open(`https://wa.me/${MEU_ZAP}?text=${encodeURIComponent(msg)}`, '_blank');
-            }
-
-            window.ativarLoja = async () => {
-                const input = document.getElementById('inputCodigo');
-                // Compara ignorando maiúsculas/minúsculas e espaços
-                if(input.value.trim().toUpperCase() == data.codigo_secreto) {
-                    const hoje = new Date();
-                    hoje.setDate(hoje.getDate() + (data.plano_escolhido === 'anual' ? 365 : 30));
-                    
-                    await set(configRef, { ...data, status: "ativo", validade: hoje.toISOString() });
-                    alert("✅ Sucesso! Bem-vindo ao sistema.");
-                    window.location.reload(); // Recarrega para mostrar o painel
-                } else { 
-                    alert("❌ Código inválido! Verifique no seu WhatsApp."); 
-                }
-            }
-            return; // PARA A EXECUÇÃO AQUI (Não carrega o resto do painel)
-        }
-
-        // 3. Verifica Validade
-        if(new Date() > (data.validade ? new Date(data.validade) : new Date())) {
-            document.body.innerHTML = "<h1 style='color:white;text-align:center;padding:50px'>SEU PLANO VENCEU<br><br>Entre em contato para renovar.</h1>"; 
+            window.copiarPix = () => { navigator.clipboard.writeText(MEU_PIX); alert("Chave Pix copiada!"); }
+            window.enviarComprovante = () => { const msg = `Olá! Desejo Solicitar o Código de Ativação da Minha Loja *${data.nome || LOJA_ID}*. Aguardo meu código.`; window.open(`https://wa.me/${MEU_ZAP}?text=${encodeURIComponent(msg)}`, '_blank'); }
+            window.ativarLoja = async () => { const input = document.getElementById('inputCodigo'); if(input.value.trim().toUpperCase() == data.codigo_secreto) { const hoje = new Date(); hoje.setDate(hoje.getDate() + (data.plano_escolhido === 'anual' ? 365 : 30)); await set(configRef, { ...data, status: "ativo", validade: hoje.toISOString() }); alert("✅ Sucesso! Bem-vindo ao sistema."); window.location.reload(); } else { alert("❌ Código inválido! Verifique no seu WhatsApp."); } }
             return;
         }
 
-        // 4. Se chegou aqui, está ATIVO. Carrega o painel normal.
+        if(new Date() > (data.validade ? new Date(data.validade) : new Date())) { document.body.innerHTML = "<h1 style='color:white;text-align:center;padding:50px'>SEU PLANO VENCEU<br><br>Entre em contato para renovar.</h1>"; return; }
+
+        // DADOS CARREGADOS
         PLANO_ATUAL = data.plano_escolhido || "mensal";
-        if (!document.getElementById('confNome')) { window.location.reload(); return; } // Segurança contra bug de renderização
+        LOJA_NOME_GLOBAL = data.nome || "Minha Loja";
+        if (!document.getElementById('confNome')) { window.location.reload(); return; }
 
         document.getElementById('confNome').value = data.nome || "";
         document.getElementById('confEnd').value = data.endereco || "";
@@ -313,38 +301,57 @@
         document.getElementById('txtValidade').innerText = new Date(data.validade).toLocaleDateString('pt-BR');
 
         const fotos = data.fotos_loja || [];
-        for(let i=0; i<5; i++) {
-            if(fotos[i]) { document.getElementById(`prev${i+1}`).src = fotos[i]; document.getElementById(`prev${i+1}`).style.display = "block"; }
-        }
+        for(let i=0; i<5; i++) { if(fotos[i]) { document.getElementById(`prev${i+1}`).src = fotos[i]; document.getElementById(`prev${i+1}`).style.display = "block"; } }
         atualizarBadgeLimite();
     });
 
-    // ... Resto do código do painel (Upload, Produtos, etc) ...
     const metricasRef = ref(db, `lojas/${LOJA_ID}/metricas/visitas`);
     onValue(metricasRef, (snap) => { if(document.getElementById('txtVisitas')) document.getElementById('txtVisitas').innerText = snap.val() || 0; });
 
+    // SALVAR CONFIG
     document.getElementById('btnSalvarConfig').addEventListener('click', async () => {
         const btn = document.getElementById('btnSalvarConfig');
         btn.innerHTML = "⏳ Salvando..."; btn.disabled = true;
         try {
-            const snap = await get(configRef);
-            const dadosAtuais = snap.val();
+            const snap = await get(configRef); const dadosAtuais = snap.val();
             let listaFotos = dadosAtuais.fotos_loja || [];
-            for(let i=1; i<=5; i++) {
-                const fileInput = document.getElementById(`f${i}`);
-                if(fileInput.files[0]) {
-                    const url = await enviarParaNuvem(fileInput.files[0], 'loja');
-                    listaFotos[i-1] = url;
-                }
-            }
+            for(let i=1; i<=5; i++) { const fileInput = document.getElementById(`f${i}`); if(fileInput.files[0]) { const url = await enviarParaNuvem(fileInput.files[0], 'loja'); listaFotos[i-1] = url; } }
             const capaPrincipal = listaFotos[0] || dadosAtuais.capa || "";
             await set(configRef, { ...dadosAtuais, nome: document.getElementById('confNome').value, endereco: document.getElementById('confEnd').value, zap: document.getElementById('confZap').value, capa: capaPrincipal, fotos_loja: listaFotos });
             showToast("Atualizado!");
-        } catch(e) { alert("Erro: " + e.message); } 
-        finally { btn.innerText = "Salvar Tudo"; btn.disabled = false; }
+        } catch(e) { alert("Erro: " + e.message); } finally { btn.innerText = "Salvar Tudo"; btn.disabled = false; }
     });
 
+    // LISTA DE PRODUTOS + BOTÃO MÁGICO DE MARKETING
     const produtosRef = ref(db, `lojas/${LOJA_ID}/produtos`);
+    onValue(produtosRef, (snapshot) => {
+        const div = document.getElementById('lista'); div.innerHTML = "";
+        const data = snapshot.val();
+        if(data) {
+            const chaves = Object.keys(data); TOTAL_PRODUTOS = chaves.length; 
+            chaves.reverse().forEach(key => { 
+                const p = data[key]; 
+                // AQUI ESTÁ A ATUALIZAÇÃO: Adicionado o botão btn-mkt (Megafone)
+                div.innerHTML += `
+                <div class="product-item">
+                    <img src="${p.img}">
+                    <div class="info">
+                        <strong>${p.nome}</strong>
+                        <span>R$ ${p.preco}</span>
+                    </div>
+                    <button class="btn-mkt" onclick="abrirGerador('${key}', '${p.nome.replace(/'/g, "")}', '${p.preco}', '${p.img}')" title="Criar Post">
+                        <i class='bx bxs-megaphone'></i>
+                    </button>
+                    <button class="btn-del" onclick="deletar('${key}')">
+                        <i class='bx bx-trash'></i>
+                    </button>
+                </div>`; 
+            });
+        } else { TOTAL_PRODUTOS = 0; div.innerHTML = "<div style='text-align:center; padding:20px; color:#64748b'>Vazio.</div>"; }
+        atualizarBadgeLimite();
+    });
+
+    // ADICIONAR PRODUTO
     document.getElementById('btnSalvarProd').addEventListener('click', async () => {
         const limite = (PLANO_ATUAL === 'anual') ? 100 : 50;
         if (TOTAL_PRODUTOS >= limite) { alert(`Limite do plano ${PLANO_ATUAL} atingido!`); return; }
@@ -361,18 +368,7 @@
             await set(push(produtosRef), { nome, cat, preco: parseFloat(preco), img: imgUrl, codigo: Math.floor(10000 + Math.random() * 90000) });
             showToast("Adicionado!");
             document.getElementById('nomeProd').value = ""; document.getElementById('precoProd').value = ""; document.getElementById('fotoProd').value = "";
-        } catch(e) { alert("Erro: " + e.message); } 
-        finally { btn.innerText = "Adicionar Produto"; btn.disabled = false; }
-    });
-
-    onValue(produtosRef, (snapshot) => {
-        const div = document.getElementById('lista'); div.innerHTML = "";
-        const data = snapshot.val();
-        if(data) {
-            const chaves = Object.keys(data); TOTAL_PRODUTOS = chaves.length; 
-            chaves.reverse().forEach(key => { const p = data[key]; div.innerHTML += `<div class="product-item"><img src="${p.img}"><div class="info"><strong>${p.nome}</strong><span>R$ ${p.preco}</span></div><button class="btn-del" onclick="deletar('${key}')">🗑️</button></div>`; });
-        } else { TOTAL_PRODUTOS = 0; div.innerHTML = "<div style='text-align:center; padding:20px; color:#64748b'>Vazio.</div>"; }
-        atualizarBadgeLimite();
+        } catch(e) { alert("Erro: " + e.message); } finally { btn.innerText = "Adicionar Produto"; btn.disabled = false; }
     });
 
     function atualizarBadgeLimite() {
@@ -381,8 +377,127 @@
         if(badge) { badge.innerText = `${TOTAL_PRODUTOS} / ${limite}`; if (TOTAL_PRODUTOS >= limite) badge.classList.add('limit-alert'); else badge.classList.remove('limit-alert'); }
     }
     window.deletar = async (id) => { if(confirm("Apagar?")) await remove(ref(db, `lojas/${LOJA_ID}/produtos/${id}`)); }
+
+    // ==========================================
+    // 🎨 MÁQUINA DE MARKETING (CANVAS)
+    // ==========================================
+    window.abrirGerador = (id, nome, preco, imgUrl) => {
+        document.getElementById('modalMkt').style.display = "flex";
+        const canvas = document.getElementById('canvasMkt');
+        const ctx = canvas.getContext('2d');
+        
+        // Fundo
+        const grad = ctx.createLinearGradient(0, 0, 0, 1920);
+        grad.addColorStop(0, '#0f172a');
+        grad.addColorStop(1, '#334155');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 1080, 1920);
+
+        // Texto Loja
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 60px Inter, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(LOJA_NOME_GLOBAL.toUpperCase(), 540, 150);
+
+        // Imagem do Produto
+        const img = new Image();
+        img.crossOrigin = "anonymous"; // Importante para imagens do Firebase
+        img.src = imgUrl;
+        
+        img.onload = () => {
+            // Desenha imagem centralizada (corte quadrado)
+            // Aspect Ratio fit
+            const size = 900;
+            const x = (1080 - size) / 2;
+            const y = 400;
+            
+            // Simples crop (center)
+            let sx, sy, sw, sh;
+            if (img.width > img.height) {
+                sh = img.height; sw = img.height; sx = (img.width - img.height) / 2; sy = 0;
+            } else {
+                sw = img.width; sh = img.width; sy = (img.height - img.width) / 2; sx = 0;
+            }
+            
+            // Borda da foto
+            ctx.save();
+            ctx.beginPath();
+            ctx.roundRect(x, y, size, size, 40);
+            ctx.clip();
+            ctx.drawImage(img, sx, sy, sw, sh, x, y, size, size);
+            ctx.restore();
+            
+            // Borda Branca
+            ctx.strokeStyle = "white";
+            ctx.lineWidth = 20;
+            ctx.strokeRect(x, y, size, size);
+
+            // Nome do Produto
+            ctx.font = "bold 90px Inter, sans-serif";
+            ctx.fillStyle = "white";
+            ctx.fillText(nome, 540, 1450);
+
+            // Preço (Etiqueta Amarela)
+            const precoTexto = "R$ " + parseFloat(preco).toFixed(2).replace('.', ',');
+            ctx.font = "bold 130px Inter, sans-serif";
+            const larguraPreco = ctx.measureText(precoTexto).width;
+            
+            ctx.fillStyle = "#facc15";
+            ctx.beginPath();
+            ctx.roundRect(540 - (larguraPreco/2) - 40, 1520, larguraPreco + 80, 180, 20);
+            ctx.fill();
+            
+            ctx.fillStyle = "black";
+            ctx.textBaseline = "middle";
+            ctx.fillText(precoTexto, 540, 1610);
+
+            // Chamada para Ação
+            ctx.fillStyle = "#a855f7"; // Roxo Marketing
+            ctx.beginPath();
+            ctx.roundRect(140, 1750, 800, 100, 50);
+            ctx.fill();
+            
+            ctx.font = "bold 50px Inter, sans-serif";
+            ctx.fillStyle = "white";
+            ctx.fillText("PEÇA PELO LINK NA BIO 📲", 540, 1815);
+        };
+    }
+
+    window.fecharMkt = () => { document.getElementById('modalMkt').style.display = "none"; }
+
+    window.compartilharImagem = () => {
+        const canvas = document.getElementById('canvasMkt');
+        const linkLoja = window.location.href.replace("admin.html", "entrada.html");
+        
+        // Copiar Link Primeiro
+        navigator.clipboard.writeText(`Olha essa oferta da ${LOJA_NOME_GLOBAL}!\nPeça aqui: ${linkLoja}`);
+        showToast("Link copiado! Postando...");
+
+        canvas.toBlob(async (blob) => {
+            const file = new File([blob], "oferta.png", { type: "image/png" });
+            
+            // Tenta usar o compartilhamento nativo do celular
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Oferta Especial',
+                        text: `Olha essa oferta da ${LOJA_NOME_GLOBAL}! Peça aqui: ${linkLoja}`
+                    });
+                } catch (error) {
+                    console.log("Erro ao compartilhar ou cancelado", error);
+                }
+            } else {
+                // Se for PC, baixa a imagem
+                const link = document.createElement('a');
+                link.download = 'oferta-status.png';
+                link.href = canvas.toDataURL();
+                link.click();
+                alert("Imagem baixada! Agora poste no seu Status.");
+            }
+        });
+    }
+
 </script>
 </body>
 </html>
-
-
