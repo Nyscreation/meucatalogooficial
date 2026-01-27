@@ -70,13 +70,27 @@
         .copy-option.selected { border-color: var(--isca); background: rgba(250, 204, 21, 0.15); }
         .copy-label { font-size: 0.75rem; color: var(--isca); font-weight: 700; margin-bottom: 5px; display: block; }
         .copy-text { font-size: 0.85rem; color: white; line-height: 1.5; white-space: pre-line; }
+
+        /* LOGIN SCREEN */
+        .login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .login-box { width: 100%; max-width: 350px; text-align: center; }
+        .pin-display { font-size: 2rem; letter-spacing: 10px; color: white; margin-bottom: 20px; min-height: 40px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="toast" class="toast"><i class='bx bx-check-circle'></i> <span>Salvo com sucesso!</span></div>
 
-    <!-- MODAL MARKETING PADRÃO -->
+    <div id="modalLogin" class="login-screen">
+        <div class="login-box">
+            <i class='bx bxs-lock-alt' style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
+            <h2 style="justify-content: center;">Loja Bloqueada</h2>
+            <p style="color: var(--text-muted); margin-bottom: 30px;">Digite sua senha de acesso:</p>
+            <input type="password" id="inputLoginSenha" placeholder="Senha" style="text-align: center; font-size: 1.2rem; letter-spacing: 5px;">
+            <button onclick="fazerLogin()" class="btn btn-primary">ENTRAR</button>
+        </div>
+    </div>
+
     <div id="modalMkt" class="modal-overlay">
         <div class="modal-content">
             <h3 style="margin-top:0; color:white;">Postar no Status 📸</h3>
@@ -89,7 +103,6 @@
         </div>
     </div>
 
-    <!-- MODAL ISCA -->
     <div id="modalIsca" class="modal-overlay">
         <div id="iscaConfig" class="modal-content" style="max-width: 450px;">
             <h3 style="margin-top:0; color:var(--isca); display: flex; align-items: center; justify-content: center; gap: 10px;">
@@ -231,6 +244,11 @@
             <label>WhatsApp</label><input type="tel" id="confZap">
             <label>Endereço</label><input type="text" id="confEnd">
             <label>Cidade</label><input type="text" id="confCidade" placeholder="Ex: Tefé, Manaus...">
+            
+            <hr style="border-color: var(--glass-border); margin: 20px 0;">
+            <label style="color: #facc15;"><i class='bx bxs-lock-alt'></i> Senha de Acesso (Segurança)</label>
+            <input type="text" id="confSenha" placeholder="Crie uma senha para bloquear o painel">
+            
             <button id="btnSalvarConfig" class="btn btn-primary">Salvar Tudo</button>
         </div>
         <div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">Plano válido até: <strong style="color:white" id="txtValidade">...</strong></div>
@@ -250,7 +268,7 @@
                 <i class='bx bx-copy'></i> Copiar Link
             </button>
         </div>
-        <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">Versão 12.1 ISCA Corrigida</div>
+        <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">Versão 13.0 + Security</div>
     </div>
 
     <nav class="bottom-nav">
@@ -272,6 +290,9 @@
     let PRODUTO_ISCA_SELECIONADO = null;
     let TEXTO_COPY_SELECIONADO = 0;
     
+    // Variável para armazenar a senha real vinda do banco
+    let SENHA_REAL_LOJA = null; 
+
     window.PRODUTOS_CACHE = {};
 
     if (!LOJA_ID) {
@@ -283,10 +304,7 @@
 
     if ('serviceWorker' in navigator) { 
         window.addEventListener('load', () => { 
-            navigator.serviceWorker.register('./sw.js').then(reg => {
-                // Força atualização do SW se houver nova versão
-                reg.update();
-            }); 
+            navigator.serviceWorker.register('./sw.js').then(reg => { reg.update(); }); 
         }); 
     }
     let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('btnInstall'); btn.style.display = 'block'; btn.addEventListener('click', () => { deferredPrompt.prompt(); }); });
@@ -333,38 +351,71 @@
         return await getDownloadURL(storageRef);
     }
 
+    // ===============================================
+    // 🔥 SISTEMA DE SEGURANÇA (VERIFICAÇÃO)
+    // ===============================================
     const configRef = ref(db, `lojas/${LOJA_ID}/config`);
     onValue(configRef, (snapshot) => {
         const data = snapshot.val();
-        if (!data) { return; }
+        if (!data) return; 
 
+        // 1. Verificação de Pagamento (Prioridade Máxima)
         if (data.status === "pendente") {
-            alert("Sua loja está pendente de ativação.");
+            // (Código de bloqueio de pagamento aqui - mantido simplificado)
+            document.body.innerHTML = "<h1 style='color:white; padding:20px; text-align:center;'>Aguardando Pagamento...</h1>";
             return;
         }
 
         if(new Date() > (data.validade ? new Date(data.validade) : new Date())) { document.body.innerHTML = "<h1 style='color:white;text-align:center;padding:50px'>SEU PLANO VENCEU<br><br>Entre em contato para renovar.</h1>"; return; }
 
+        // 2. Verificação de SENHA (NOVO!)
+        SENHA_REAL_LOJA = data.senha_admin || ""; // Pega a senha do banco
+        
+        if (SENHA_REAL_LOJA !== "") {
+            // Se tem senha, verifica se já logou nesta sessão
+            const sessaoAtual = sessionStorage.getItem(`auth_${LOJA_ID}`);
+            if (sessaoAtual !== "ok") {
+                document.getElementById('modalLogin').style.display = 'flex'; // Bloqueia a tela
+            } else {
+                document.getElementById('modalLogin').style.display = 'none'; // Libera
+            }
+        }
+
+        // Carrega dados normais
         PLANO_ATUAL = data.plano_escolhido || "mensal";
         LOJA_NOME_GLOBAL = data.nome || "Minha Loja";
         CIDADE_GLOBAL = data.cidade || "";
         
-        if (!document.getElementById('confNome')) { window.location.reload(); return; }
-
-        document.getElementById('confNome').value = data.nome || "";
-        document.getElementById('confEnd').value = data.endereco || "";
-        document.getElementById('confZap').value = data.zap || "";
-        document.getElementById('confCidade').value = data.cidade || "";
-        document.getElementById('txtValidade').innerText = new Date(data.validade).toLocaleDateString('pt-BR');
+        if (document.getElementById('confNome')) {
+            document.getElementById('confNome').value = data.nome || "";
+            document.getElementById('confEnd').value = data.endereco || "";
+            document.getElementById('confZap').value = data.zap || "";
+            document.getElementById('confCidade').value = data.cidade || "";
+            document.getElementById('confSenha').value = data.senha_admin || ""; // Mostra a senha atual no campo
+            document.getElementById('txtValidade').innerText = data.validade ? new Date(data.validade).toLocaleDateString('pt-BR') : "...";
+        }
 
         const fotos = data.fotos_loja || [];
         for(let i=0; i<5; i++) { if(fotos[i]) { document.getElementById(`prev${i+1}`).src = fotos[i]; document.getElementById(`prev${i+1}`).style.display = "block"; } }
         atualizarBadgeLimite();
     });
 
+    // Função global de Login
+    window.fazerLogin = () => {
+        const input = document.getElementById('inputLoginSenha').value;
+        if (input === SENHA_REAL_LOJA) {
+            sessionStorage.setItem(`auth_${LOJA_ID}`, "ok"); // Salva na sessão temporária
+            document.getElementById('modalLogin').style.display = 'none'; // Desbloqueia
+        } else {
+            alert("Senha Incorreta!");
+            document.getElementById('inputLoginSenha').value = "";
+        }
+    }
+
     const metricasRef = ref(db, `lojas/${LOJA_ID}/metricas/visitas`);
     onValue(metricasRef, (snap) => { if(document.getElementById('txtVisitas')) document.getElementById('txtVisitas').innerText = snap.val() || 0; });
 
+    // Salvar Configurações (INCLUINDO SENHA)
     document.getElementById('btnSalvarConfig').addEventListener('click', async () => {
         const btn = document.getElementById('btnSalvarConfig');
         btn.innerHTML = "⏳ Salvando..."; btn.disabled = true;
@@ -373,12 +424,14 @@
             let listaFotos = dadosAtuais.fotos_loja || [];
             for(let i=1; i<=5; i++) { const fileInput = document.getElementById(`f${i}`); if(fileInput.files[0]) { const url = await enviarParaNuvem(fileInput.files[0], 'loja'); listaFotos[i-1] = url; } }
             const capaPrincipal = listaFotos[0] || dadosAtuais.capa || "";
+            
             await set(configRef, { 
                 ...dadosAtuais, 
                 nome: document.getElementById('confNome').value, 
                 endereco: document.getElementById('confEnd').value, 
                 zap: document.getElementById('confZap').value, 
                 cidade: document.getElementById('confCidade').value,
+                senha_admin: document.getElementById('confSenha').value, // Salva a senha nova
                 capa: capaPrincipal, 
                 fotos_loja: listaFotos 
             });
@@ -442,7 +495,7 @@
     window.deletar = async (id) => { if(confirm("Apagar?")) await remove(ref(db, `lojas/${LOJA_ID}/produtos/${id}`)); }
 
     // ==========================================
-    // 🎨 MÁQUINA DE MARKETING (SIMPLIFICADA)
+    // 🎨 MÁQUINA DE MARKETING
     // ==========================================
     window.abrirGerador = async (id) => {
         const p = window.PRODUTOS_CACHE[id];
@@ -454,19 +507,15 @@
         
         modal.style.display = "flex";
 
-        // Fundo
         const grad = ctx.createLinearGradient(0, 0, 0, 1920);
         grad.addColorStop(0, '#0f172a'); grad.addColorStop(1, '#334155');
         ctx.fillStyle = grad; ctx.fillRect(0, 0, 1080, 1920);
         
-        // Texto carregando
         ctx.fillStyle = "rgba(255,255,255,0.2)";
         ctx.font = "40px Inter"; ctx.textAlign = "center"; ctx.fillText("Baixando...", 540, 960);
 
-        // Carrega Imagem usando o novo método seguro
         const img = await carregarImagemSegura(p.img);
         
-        // Desenha
         ctx.fillStyle = grad; ctx.fillRect(0, 0, 1080, 1920);
         ctx.fillStyle = "#fff"; ctx.font = "bold 60px Inter, sans-serif"; ctx.textAlign = "center";
         ctx.fillText(LOJA_NOME_GLOBAL.toUpperCase(), 540, 150);
@@ -517,13 +566,9 @@
     }
 
     // ==========================================
-    // 🔥 SISTEMA ISCA (COM LOADER BLINDADO)
+    // 🔥 SISTEMA ISCA (LOADER + PROXY)
     // ==========================================
-    
-    // --- O SEGREDO DO SUCESSO: CARREGADOR INTELIGENTE ---
-    // Tenta 3 métodos: Base64 direto, Proxy Weserv, Proxy Backup (Corsproxy)
     async function carregarImagemSegura(originalUrl) {
-        // 1. Se já for Base64 (data:image...), retorna direto
         if (originalUrl.startsWith('data:')) {
             return new Promise((resolve) => {
                 const img = new Image();
@@ -532,14 +577,8 @@
                 img.src = originalUrl;
             });
         }
-
-        // Limpeza da URL (remove protocolos duplos que confundem proxies)
         const urlLimpa = originalUrl.replace(/^https?:\/\//, '');
-        
-        // 2. Tentar Proxy Principal (Weserv)
         const tentativa1 = `https://images.weserv.nl/?url=ssl:${urlLimpa}&w=800&fit=cover&n=-1`;
-        
-        // 3. Tentar Proxy Backup (Corsproxy.io) - Caso o Weserv falhe
         const tentativa2 = `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`;
 
         const carregar = (src) => {
@@ -549,22 +588,14 @@
                 img.onload = () => resolve(img);
                 img.onerror = () => reject();
                 img.src = src;
-                // Timeout de 5 segundos para não travar
                 setTimeout(() => reject(), 5000);
             });
         };
 
-        try {
-            console.log("Tentando Weserv...");
-            return await carregar(tentativa1);
-        } catch (e) {
-            console.log("Weserv falhou. Tentando Corsproxy...");
-            try {
-                return await carregar(tentativa2);
-            } catch (e2) {
-                console.log("Todos falharam.");
-                return null; // Retorna null para desenhar o placeholder
-            }
+        try { return await carregar(tentativa1); } 
+        catch (e) { 
+            try { return await carregar(tentativa2); } 
+            catch (e2) { return null; }
         }
     }
 
@@ -589,14 +620,8 @@
         document.getElementById('iscaResultado').style.display = "none";
     }
 
-    window.fecharIsca = () => {
-        document.getElementById('modalIsca').style.display = "none";
-    }
-
-    window.voltarIsca = () => {
-        document.getElementById('iscaResultado').style.display = "none";
-        document.getElementById('iscaConfig').style.display = "block";
-    }
+    window.fecharIsca = () => { document.getElementById('modalIsca').style.display = "none"; }
+    window.voltarIsca = () => { document.getElementById('iscaResultado').style.display = "none"; document.getElementById('iscaConfig').style.display = "block"; }
 
     window.gerarIsca = async () => {
         const produtoId = document.getElementById('selectProdutoIsca').value;
@@ -606,7 +631,6 @@
         
         if (!produtoId || !precoNormal || !precoIsca) return alert("Preencha todos os dados!");
         
-        // Feedback visual no botão
         const btn = document.querySelector('#iscaConfig .btn-isca');
         const textoOriginal = btn.innerHTML;
         btn.innerHTML = "⏳ Gerando..."; btn.disabled = true;
@@ -614,17 +638,11 @@
         const produto = window.PRODUTOS_CACHE[produtoId];
         PRODUTO_ISCA_SELECIONADO = { ...produto, precoNormal, precoIsca, cidade };
 
-        // Desenha o Card
         await desenharCardIsca(produto, cidade, precoNormal, precoIsca);
-        
-        // Gera os textos
         gerarOpcoesTexto(produto, cidade, precoNormal, precoIsca);
         
-        // Troca telas
         document.getElementById('iscaConfig').style.display = "none";
         document.getElementById('iscaResultado').style.display = "block";
-        
-        // Restaura botão
         btn.innerHTML = textoOriginal; btn.disabled = false;
     }
 
@@ -632,49 +650,30 @@
         const canvas = document.getElementById('canvasIsca');
         const ctx = canvas.getContext('2d');
         
-        // Fundo
-        ctx.fillStyle = "#fbbf24"; 
-        ctx.fillRect(0, 0, 1080, 1920);
+        ctx.fillStyle = "#fbbf24"; ctx.fillRect(0, 0, 1080, 1920);
 
-        // Título
         const nomeUpper = produto.nome.toUpperCase();
-        ctx.fillStyle = "black";
-        ctx.font = "bold 65px Inter, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
+        ctx.fillStyle = "black"; ctx.font = "bold 65px Inter, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
         if(ctx.measureText(nomeUpper).width > 1000) { ctx.font = "bold 50px Inter, sans-serif"; }
         ctx.fillText(nomeUpper, 540, 150);
 
-        // Imagem com Loader Seguro
         const img = await carregarImagemSegura(produto.img);
-        
-        const size = 800;
-        const x = (1080 - size) / 2;
-        const y = 300;
+        const size = 800; const x = (1080 - size) / 2; const y = 300;
 
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(x, y, size, size);
-        ctx.clip();
-        
+        ctx.save(); ctx.beginPath(); ctx.rect(x, y, size, size); ctx.clip();
         if (img) {
             let sx, sy, sw, sh;
             if (img.width > img.height) { sh = img.height; sw = img.height; sx = (img.width - img.height) / 2; sy = 0; } 
             else { sw = img.width; sh = img.width; sy = (img.height - img.width) / 2; sx = 0; }
             ctx.drawImage(img, sx, sy, sw, sh, x, y, size, size);
         } else {
-            // Placeholder se falhar tudo
             ctx.fillStyle = "#334155"; ctx.fillRect(x, y, size, size);
             ctx.fillStyle = "white"; ctx.font = "100px Inter"; ctx.fillText("📷", 540, y + (size/2));
         }
         ctx.restore();
-        
-        // Borda Branca
         ctx.strokeStyle = "white"; ctx.lineWidth = 20; ctx.strokeRect(x, y, size, size);
 
-        // Preços
         const yPrecos = 1250;
-        
         ctx.fillStyle = "#dc2626"; ctx.font = "bold 50px Inter, sans-serif"; ctx.fillText("DE:", 540, yPrecos);
         const precoDeTxt = `R$ ${precoNormal.toFixed(2).replace('.', ',')}`;
         ctx.font = "bold 80px Inter, sans-serif";
@@ -690,7 +689,6 @@
         ctx.fillStyle = "#22c55e"; ctx.beginPath(); ctx.roundRect(540 - wPor/2 - 40, yPrecos + 190, wPor + 80, 160, 20); ctx.fill();
         ctx.fillStyle = "white"; ctx.fillText(precoPorTxt, 540, yPrecos + 305);
 
-        // Rodapé
         ctx.fillStyle = "#b91c1c"; ctx.fillRect(0, 1920 - 100, 1080, 100);
         ctx.fillStyle = "white"; ctx.font = "bold 40px Inter, sans-serif"; ctx.fillText("👇 SÓ NO LINK ABAIXO 👇", 540, 1920 - 35);
     }
@@ -745,4 +743,3 @@
 </script>
 </body>
 </html>
-
