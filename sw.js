@@ -1,5 +1,5 @@
-// ATUALIZADO PARA V11 - CORREÇÃO DEFINITIVA DE IMAGEM
-const CACHE_NAME = 'painel-gestor-v11-proxy';
+// ATUALIZADO PARA V13 - ULTRA FIX DE IMAGENS
+const CACHE_NAME = 'painel-v13-ultra-fix';
 
 const urlsToCache = [
   './',
@@ -12,24 +12,25 @@ const urlsToCache = [
   './firebase-config.js'
 ];
 
-// 1. Instalação
+// 1. Instalação (Força a atualização imediata)
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('Cache v11 instalado');
+      console.log('Cache v13 instalado com sucesso');
       return cache.addAll(urlsToCache);
     })
   );
 });
 
-// 2. Ativação (Limpeza antiga)
+// 2. Ativação (Limpa os caches antigos v11, v12, etc)
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
+            console.log('Deletando cache antigo:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -44,24 +45,21 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // --- REGRA DE OURO ---
-  // Se for imagem do Firebase, Google ou do Proxy (weserv), IGNORA O CACHE.
-  // Deixa passar direto para a internet. Isso resolve o erro de travamento.
+  // --- CORREÇÃO DEFINITIVA ---
+  // Se for imagem externa (Firebase, Google, Weserv ou Corsproxy),
+  // OBRIGA o navegador a buscar na internet.
   if (url.hostname.includes('firebase') || 
       url.hostname.includes('google') || 
-      url.hostname.includes('weserv')) {
-    return; 
+      url.hostname.includes('weserv') ||
+      url.hostname.includes('corsproxy')) {
+    
+    // AQUI ESTAVA O ERRO ANTES. O jeito certo é esse:
+    event.respondWith(fetch(req)); 
+    return;
   }
 
-  // Estratégia HTML (Network First)
-  if (req.mode === 'navigate' || url.pathname.endsWith('.html')) {
-    event.respondWith(
-      fetch(req).catch(() => caches.match(req))
-    );
-  } else {
-    // Estratégia Assets (Cache First)
-    event.respondWith(
-      caches.match(req).then((response) => response || fetch(req))
-    );
-  }
+  // Estratégia Padrão: Tenta Cache, se não tiver, vai pra Rede
+  event.respondWith(
+    caches.match(req).then((response) => response || fetch(req))
+  );
 });
