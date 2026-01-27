@@ -3,138 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel GOD MODE</title>
+    <title>Painel GOD MODE - V3</title>
     
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg: #0f172a;
-            --surface: #1e293b;
-            --primary: #3b82f6;
-            --text: #f1f5f9;
-            --text-muted: #94a3b8;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --premium: #a855f7;
+            --bg: #0f172a; --surface: #1e293b; --primary: #3b82f6; --text: #f1f5f9; --text-muted: #94a3b8;
+            --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --premium: #a855f7;
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; min-height: 100vh; }
 
-        /* TELA DE LOGIN */
-        #loginScreen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.98);
-            z-index: 1000;
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-        }
-        .login-box {
-            background: var(--surface); padding: 40px; border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-            text-align: center; width: 100%; max-width: 350px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-        .login-box input {
-            width: 100%; padding: 15px; margin: 20px 0;
-            background: rgba(0,0,0,0.3); border: 1px solid #334155;
-            color: white; border-radius: 10px; text-align: center; font-size: 1.2rem;
-            box-sizing: border-box;
-        }
+        /* LOGIN */
+        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .login-box { background: var(--surface); padding: 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 100%; max-width: 350px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .login-box input { width: 100%; padding: 15px; margin: 20px 0; background: rgba(0,0,0,0.3); border: 1px solid #334155; color: white; border-radius: 10px; text-align: center; font-size: 1.2rem; }
 
-        /* PAINEL */
-        .header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 30px; padding-bottom: 20px;
-            border-bottom: 1px solid #334155;
-        }
+        /* HEADER */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #334155; }
         .header h1 { margin: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
-        .badge-god { background: var(--primary); padding: 5px 12px; border-radius: 50px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: white; }
+        .badge-god { background: linear-gradient(135deg, #f59e0b, #d97706); padding: 5px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; color: black; box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
 
-        .stats-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px; margin-bottom: 30px;
-        }
-        .stat-card {
-            background: var(--surface); padding: 20px; border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.05);
-            display: flex; flex-direction: column;
-        }
+        /* STATS */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-card { background: var(--surface); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; }
         .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
-        .stat-value { font-size: 2rem; font-weight: 800; color: white; }
-        .stat-icon { font-size: 1.5rem; margin-bottom: 10px; color: var(--primary); }
+        .stat-value { font-size: 1.8rem; font-weight: 800; color: white; }
+        .stat-icon { font-size: 1.5rem; color: var(--primary); position: absolute; top: 20px; right: 20px; opacity: 0.5; }
 
-        .toolbar {
-            display: flex; gap: 15px; margin-bottom: 20px;
-            background: var(--surface); padding: 15px; border-radius: 12px;
-        }
-        .search-box { flex: 1; position: relative; }
-        .search-box input {
-            width: 100%; padding: 12px 12px 12px 40px;
-            background: var(--bg); border: 1px solid #334155;
-            color: white; border-radius: 8px; outline: none; box-sizing: border-box;
-        }
-        .search-box i {
-            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-            color: var(--text-muted);
-        }
+        /* TOOLBAR E FILTROS */
+        .toolbar { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; background: var(--surface); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
+        .filter-group { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .filter-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 8px 16px; border-radius: 50px; cursor: pointer; font-size: 0.85rem; transition: 0.3s; white-space: nowrap; }
+        .filter-btn:hover, .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .filter-btn.active-pendente { background: var(--warning); color: black; border-color: var(--warning); }
+        .filter-btn.active-vencido { background: var(--danger); color: white; border-color: var(--danger); }
 
-        .table-container {
-            background: var(--surface); border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.05);
-            overflow-x: auto;
-            min-height: 400px;
-        }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th { text-align: left; padding: 20px; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid #334155; }
-        td { padding: 20px; border-bottom: 1px solid #334155; vertical-align: middle; }
-        tr:last-child td { border-bottom: none; }
+        .search-box { position: relative; width: 100%; }
+        .search-box input { width: 100%; padding: 12px 12px 12px 40px; background: var(--bg); border: 1px solid #334155; color: white; border-radius: 8px; outline: none; box-sizing: border-box; }
+        .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+        /* TABELA */
+        .table-container { background: var(--surface); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); overflow-x: auto; min-height: 400px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        th { text-align: left; padding: 15px 20px; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; border-bottom: 1px solid #334155; }
+        td { padding: 15px 20px; border-bottom: 1px solid #334155; vertical-align: middle; }
         tr:hover { background: rgba(255,255,255,0.02); }
 
-        .loja-info { display: flex; flex-direction: column; }
-        .loja-nome { font-weight: bold; font-size: 1rem; color: white; }
-        .loja-id { font-family: monospace; color: var(--primary); font-size: 0.85rem; }
+        .loja-nome { font-weight: bold; font-size: 0.95rem; color: white; display: block; }
+        .loja-id { font-family: monospace; color: var(--primary); font-size: 0.8rem; }
         
-        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
-        .status-ativo { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .status-pendente { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); animation: pulse 2s infinite; }
-        .status-vencido { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        /* BADGES */
+        .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+        .st-pendente { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); animation: pulse 2s infinite; }
+        .st-ativo { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .st-vencido { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
 
-        @keyframes pulse { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
+        .plano-badge { padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
+        .pl-mensal { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .pl-anual { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); box-shadow: 0 0 10px rgba(168, 85, 247, 0.1); }
 
-        .btn-action {
-            width: 35px; height: 35px; border-radius: 8px; border: none;
-            cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
-            font-size: 1.1rem; transition: 0.2s; margin-right: 5px; position: relative;
-        }
-        .btn-action:hover { transform: scale(1.1); filter: brightness(1.2); }
+        /* BOTÕES DE AÇÃO */
+        .actions { display: flex; gap: 5px; }
+        .btn-mini { width: 32px; height: 32px; border-radius: 6px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: 0.2s; }
+        .btn-mini:hover { transform: translateY(-2px); filter: brightness(1.2); }
         
-        .btn-zap { background: rgba(37, 211, 102, 0.1); color: #25D366; }
-        .btn-link { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-        .btn-renovar { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-        .btn-reset { background: rgba(255, 255, 255, 0.1); color: #fff; }
-        .btn-del { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .b-zap { background: rgba(37, 211, 102, 0.1); color: #25D366; }
+        .b-copy { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .b-del { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
-        .visitas-badge {
-            background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 8px;
-            font-family: monospace; font-size: 1rem; color: white; border: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .codigo-ativacao {
-            font-family: monospace; font-size: 1.1rem; color: #facc15;
+        .btn-renovar-m { background: rgba(59, 130, 246, 0.2); color: #60a5fa; font-size: 0.75rem; font-weight: bold; padding: 0 10px; width: auto; }
+        .btn-renovar-a { background: rgba(168, 85, 247, 0.2); color: #c084fc; font-size: 0.75rem; font-weight: bold; padding: 0 10px; width: auto; }
+
+        .codigo-box {
+            font-family: monospace; font-size: 1rem; color: #facc15;
             background: rgba(250, 204, 21, 0.1); padding: 5px 10px; border-radius: 6px;
-            border: 1px dashed #facc15; cursor: pointer; transition: 0.2s;
+            border: 1px dashed #facc15; cursor: pointer; text-align: center;
         }
-        .codigo-ativacao:hover { background: rgba(250, 204, 21, 0.2); transform: scale(1.05); }
+        .codigo-box:hover { background: #facc15; color: black; }
     </style>
 </head>
 <body>
@@ -142,18 +91,17 @@
     <div id="loginScreen">
         <div class="login-box">
             <i class='bx bxs-shield-plus' style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"></i>
-            <h2>Acesso Master</h2>
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Digite a senha GOD MODE</p>
+            <h2>GOD MODE V3</h2>
             <input type="password" id="senhaInput" placeholder="Senha Mestra">
-            <button onclick="verificarSenha()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">ENTRAR</button>
+            <button onclick="verificarSenha()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">ENTRAR NO SISTEMA</button>
         </div>
     </div>
 
     <div id="painel" style="display:none">
         
         <div class="header">
-            <h1><i class='bx bxs-dashboard'></i> Painel Master <span class="badge-god">V 2.2</span></h1>
-            <button onclick="sair()" style="background:none; border:1px solid #334155; color:white; padding:8px 15px; border-radius:8px; cursor:pointer;">Sair</button>
+            <h1><i class='bx bxs-dashboard'></i> Painel Master <span class="badge-god">V 3.0</span></h1>
+            <button onclick="location.reload()" style="background:none; border:1px solid #334155; color:#f87171; padding:8px 15px; border-radius:8px; cursor:pointer;">Sair</button>
         </div>
 
         <div class="stats-grid">
@@ -163,26 +111,36 @@
                 <div class="stat-value" id="stTotal">0</div>
             </div>
             <div class="stat-card">
-                <i class='bx bxs-group stat-icon' style="color: #60a5fa;"></i>
-                <div class="stat-label">Tráfego Total (Visitas)</div>
-                <div class="stat-value" id="stVisitasTotal">0</div>
-            </div>
-            <div class="stat-card">
                 <i class='bx bxs-wallet stat-icon' style="color: #10b981;"></i>
                 <div class="stat-label">Receita Estimada</div>
                 <div class="stat-value" id="stFat">R$ 0,00</div>
             </div>
             <div class="stat-card">
+                <i class='bx bxs-calendar-star stat-icon' style="color: #a855f7;"></i>
+                <div class="stat-label">Planos Ativos</div>
+                <div style="font-size: 0.9rem; margin-top: 5px; color:white;">
+                    <span style="color:#60a5fa">Mensal: <b id="stMensal">0</b></span> | 
+                    <span style="color:#c084fc">Anual: <b id="stAnual">0</b></span>
+                </div>
+            </div>
+            <div class="stat-card">
                 <i class='bx bxs-error-circle stat-icon' style="color: #ef4444;"></i>
-                <div class="stat-label">Pendentes / Vencidas</div>
-                <div class="stat-value" id="stPend">0</div>
+                <div class="stat-label">Atenção (Pend/Venc)</div>
+                <div class="stat-value" id="stPend" style="color: #fca5a5;">0</div>
             </div>
         </div>
 
         <div class="toolbar">
+            <div class="filter-group">
+                <button class="filter-btn active" onclick="filtrarStatus('todos', this)">Todos</button>
+                <button class="filter-btn" onclick="filtrarStatus('pendente', this)">⏳ Pendentes</button>
+                <button class="filter-btn" onclick="filtrarStatus('ativo', this)">✅ Ativos</button>
+                <button class="filter-btn" onclick="filtrarStatus('vencido', this)">⚠️ Vencidos</button>
+                <button class="filter-btn" onclick="filtrarStatus('anual', this)">💎 Anuais</button>
+            </div>
             <div class="search-box">
                 <i class='bx bx-search'></i>
-                <input type="text" id="searchInput" placeholder="Buscar loja, ID ou cliente..." onkeyup="filtrarTabela()">
+                <input type="text" id="searchInput" placeholder="Buscar por Nome, ID ou WhatsApp..." onkeyup="filtrarTexto()">
             </div>
         </div>
 
@@ -190,13 +148,12 @@
             <table id="tabelaLojas">
                 <thead>
                     <tr>
-                        <th>Loja / Cliente</th>
+                        <th>Loja</th>
                         <th>Plano</th>
-                        <th>Status</th>
-                        <th>Visitas</th>
+                        <th>Status / Chave</th>
                         <th>Vencimento</th>
-                        <th>Cód. Ativação</th> 
-                        <th>Ações</th>
+                        <th>Visitas</th>
+                        <th>Ações Rápidas</th>
                     </tr>
                 </thead>
                 <tbody id="listaLojas"></tbody>
@@ -207,173 +164,209 @@
 <script type="module">
     import { db, ref, onValue, set, remove, get, update } from './firebase-config.js';
 
-    // --- SENHA ---
+    // --- LOGIN ---
     window.verificarSenha = () => {
         if(document.getElementById('senhaInput').value === "C@listhenys1994") {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('painel').style.display = 'block';
             carregarLojas();
-        } else { alert("Senha incorreta!"); }
+        } else { alert("Senha Incorreta"); }
     }
-    window.sair = () => location.reload();
 
-    // --- CARREGAR DADOS ---
-    let lojasCache = [];
+    // --- CARREGAMENTO ---
+    let lojasData = [];
+    let filtroAtual = 'todos';
 
     function carregarLojas() {
         onValue(ref(db, 'lojas'), (snapshot) => {
             const dados = snapshot.val();
-            const tbody = document.getElementById('listaLojas');
-            tbody.innerHTML = "";
-            lojasCache = [];
+            lojasData = [];
 
-            if(!dados) {
-                tbody.innerHTML = "<tr><td colspan='7' style='text-align:center; padding:30px'>Nenhuma loja encontrada.</td></tr>";
-                atualizarStats(0,0,0,0);
-                return;
+            let total = 0, mensal = 0, anual = 0, pendentes = 0, fat = 0;
+
+            if(dados) {
+                Object.entries(dados).forEach(([id, loja]) => {
+                    const c = loja.config || {};
+                    const m = loja.metricas || {};
+                    
+                    // Cálculo Status
+                    const validade = c.validade ? new Date(c.validade) : new Date(0);
+                    const hoje = new Date();
+                    const diasRestantes = Math.ceil((validade - hoje) / (1000 * 60 * 60 * 24));
+                    
+                    let status = 'ativo';
+                    if (c.status === 'pendente') status = 'pendente';
+                    else if (diasRestantes < 0) status = 'vencido';
+
+                    // Contadores
+                    total++;
+                    if (status === 'pendente' || status === 'vencido') pendentes++;
+                    if (status === 'ativo') {
+                        if (c.plano_escolhido === 'anual') { anual++; fat += 249.90; }
+                        else { mensal++; fat += 59.90; }
+                    }
+
+                    lojasData.push({
+                        id,
+                        nome: c.nome || "Sem Nome",
+                        zap: c.zap || "",
+                        plano: c.plano_escolhido || 'mensal',
+                        status,
+                        diasRestantes,
+                        validade,
+                        visitas: m.visitas || 0,
+                        codigo: c.codigo_secreto || "---",
+                        raw: (c.nome + id + c.zap).toLowerCase()
+                    });
+                });
             }
 
-            let total = 0, ativas = 0, pendentes = 0, faturamento = 0, totalVisitasGlobal = 0;
-            let arrayLojas = [];
+            // Atualiza Stats
+            document.getElementById('stTotal').innerText = total;
+            document.getElementById('stFat').innerText = fat.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('stMensal').innerText = mensal;
+            document.getElementById('stAnual').innerText = anual;
+            document.getElementById('stPend').innerText = pendentes;
 
-            // 1. Processa os dados
-            Object.entries(dados).forEach(([id, loja]) => {
-                const c = loja.config || {};
-                const m = loja.metricas || {}; 
-                arrayLojas.push({ id, ...c, visitas: m.visitas || 0 });
-            });
-
-            // 2. Ordenação Inteligente: PENDENTES PRIMEIRO, depois por Data
-            arrayLojas.sort((a, b) => {
-                if (a.status === 'pendente' && b.status !== 'pendente') return -1;
-                if (a.status !== 'pendente' && b.status === 'pendente') return 1;
-                return new Date(b.validade) - new Date(a.validade);
-            });
-
-            // 3. Renderiza
-            arrayLojas.forEach(loja => {
-                total++;
-                totalVisitasGlobal += loja.visitas;
-
-                // Cálculo de Status e Data
-                const validade = loja.validade ? new Date(loja.validade) : new Date(0);
-                const diasRestantes = Math.ceil((validade - new Date()) / (1000 * 60 * 60 * 24));
-                
-                let statusHTML = "";
-                let isPendente = false;
-
-                if (loja.status === "pendente") {
-                    statusHTML = `<span class="status-badge status-pendente">AGUARDANDO CHAVE</span>`;
-                    pendentes++;
-                    isPendente = true;
-                } else if (diasRestantes < 0) {
-                    statusHTML = `<span class="status-badge status-vencido">Vencido</span>`;
-                    pendentes++;
-                } else {
-                    statusHTML = `<span class="status-badge status-ativo">Ativo (${diasRestantes}d)</span>`;
-                    ativas++;
-                    faturamento += (loja.plano_escolhido === 'anual') ? 249.90 : 59.90;
-                }
-
-                // Configuração do Botão WhatsApp (Inteligente)
-                let msgZap = "";
-                if (isPendente) {
-                    msgZap = `Olá! A chave de ativação da sua loja *${loja.nome}* é: *${loja.codigo_secreto}*`;
-                } else {
-                    msgZap = `Olá ${loja.nome}, tudo bem?`;
-                }
-                const linkZap = `https://wa.me/${loja.zap}?text=${encodeURIComponent(msgZap)}`;
-
-                // Linha da Tabela
-                const row = `
-                    <tr style="${isPendente ? 'background:rgba(245, 158, 11, 0.05);' : ''}">
-                        <td>
-                            <div class="loja-info">
-                                <span class="loja-nome">${loja.nome}</span>
-                                <span class="loja-id">ID: ${loja.id}</span>
-                                <span style="font-size:0.7rem; color:#64748b">${loja.zap}</span>
-                            </div>
-                        </td>
-                        <td><span style="background:#334155; padding:3px 8px; border-radius:4px; font-size:0.75rem;">${loja.plano_escolhido || "-"}</span></td>
-                        <td>${statusHTML}</td>
-                        <td><span class="visitas-badge"><i class='bx bx-show'></i> ${loja.visitas}</span></td>
-                        <td style="color:#94a3b8; font-size:0.85rem">${validade.toLocaleDateString('pt-BR')}</td>
-                        
-                        <td style="text-align:center;">
-                            <span class="codigo-ativacao" onclick="copiarChave('${loja.codigo_secreto}')" title="Clique para copiar">
-                                ${loja.codigo_secreto || "---"}
-                            </span>
-                        </td>
-                        
-                        <td>
-                            <button class="btn-action btn-zap" onclick="window.open('${linkZap}', '_blank')" title="Enviar Chave no WhatsApp"><i class='bx bxl-whatsapp'></i></button>
-                            <button class="btn-action btn-link" onclick="copiarLink('${loja.id}')" title="Copiar Link Capa"><i class='bx bx-link'></i></button>
-                            <button class="btn-action btn-reset" onclick="zerarVisitas('${loja.id}')" title="Zerar Visitas"><i class='bx bx-reset'></i></button>
-                            <button class="btn-action btn-renovar" onclick="renovar('${loja.id}', 30)" title="Renovar 30 dias"><i class='bx bx-calendar'></i></button>
-                            <button class="btn-action btn-del" onclick="apagarLoja('${loja.id}')" title="Apagar Loja"><i class='bx bx-trash'></i></button>
-                        </td>
-                    </tr>
-                `;
-                tbody.innerHTML += row;
-                lojasCache.push({ row, text: (loja.nome + loja.id + loja.zap).toLowerCase() });
-            });
-
-            atualizarStats(total, totalVisitasGlobal, pendentes, faturamento);
+            renderizarTabela();
         });
     }
 
-    function atualizarStats(total, visitas, pendentes, fat) {
-        document.getElementById('stTotal').innerText = total;
-        document.getElementById('stVisitasTotal').innerText = visitas; 
-        document.getElementById('stPend').innerText = pendentes;
-        document.getElementById('stFat').innerText = fat.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    }
-
-    window.filtrarTabela = () => {
-        const termo = document.getElementById('searchInput').value.toLowerCase();
+    function renderizarTabela() {
         const tbody = document.getElementById('listaLojas');
         tbody.innerHTML = "";
-        lojasCache.forEach(item => { if(item.text.includes(termo)) tbody.innerHTML += item.row; });
+        
+        // 1. Filtragem
+        const termo = document.getElementById('searchInput').value.toLowerCase();
+        let listaFiltrada = lojasData.filter(loja => {
+            const matchTexto = loja.raw.includes(termo);
+            if (!matchTexto) return false;
+
+            if (filtroAtual === 'todos') return true;
+            if (filtroAtual === 'anual') return loja.plano === 'anual';
+            return loja.status === filtroAtual;
+        });
+
+        // 2. Ordenação (Pendentes > Vencidos > Ativos > Data Recente)
+        listaFiltrada.sort((a, b) => {
+            const peso = { 'pendente': 3, 'vencido': 2, 'ativo': 1 };
+            if (peso[a.status] !== peso[b.status]) return peso[b.status] - peso[a.status];
+            return b.validade - a.validade;
+        });
+
+        // 3. HTML
+        if (listaFiltrada.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding:30px'>Nenhum resultado.</td></tr>";
+            return;
+        }
+
+        listaFiltrada.forEach(loja => {
+            // Badges
+            let badgeStatus = "";
+            let rowStyle = "";
+            let msgZap = `Olá ${loja.nome}, tudo bem?`;
+
+            if (loja.status === 'pendente') {
+                badgeStatus = `<span class="status-badge st-pendente"><i class='bx bx-time'></i> PENDENTE</span>`;
+                rowStyle = "background: rgba(245, 158, 11, 0.05);";
+                msgZap = `Olá! A chave de ativação para a loja *${loja.nome}* é: *${loja.codigo}*`;
+            } else if (loja.status === 'vencido') {
+                badgeStatus = `<span class="status-badge st-vencido">VENCIDO (${Math.abs(loja.diasRestantes)}d)</span>`;
+                msgZap = `Olá! O plano da loja *${loja.nome}* venceu. Vamos renovar?`;
+            } else {
+                badgeStatus = `<span class="status-badge st-ativo">ATIVO (${loja.diasRestantes}d)</span>`;
+            }
+
+            const badgePlano = loja.plano === 'anual' 
+                ? `<span class="plano-badge pl-anual">💎 ANUAL</span>` 
+                : `<span class="plano-badge pl-mensal">📅 MENSAL</span>`;
+
+            const linkZap = `https://wa.me/${loja.zap}?text=${encodeURIComponent(msgZap)}`;
+
+            const tr = `
+                <tr style="${rowStyle}">
+                    <td>
+                        <span class="loja-nome">${loja.nome}</span>
+                        <span class="loja-id">${loja.id}</span>
+                    </td>
+                    <td>${badgePlano}</td>
+                    <td>
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            ${badgeStatus}
+                            ${loja.status === 'pendente' ? `<div class="codigo-box" onclick="copiar('${loja.codigo}')">${loja.codigo}</div>` : ''}
+                        </div>
+                    </td>
+                    <td style="font-size:0.85rem; color:#ccc;">
+                        ${loja.validade.toLocaleDateString('pt-BR')}
+                    </td>
+                    <td><span class="status-badge" style="background:#334155"><i class='bx bx-show'></i> ${loja.visitas}</span></td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn-mini b-zap" onclick="window.open('${linkZap}', '_blank')" title="WhatsApp"><i class='bx bxl-whatsapp'></i></button>
+                            <button class="btn-mini b-copy" onclick="copiarLink('${loja.id}')" title="Copiar Link"><i class='bx bx-link'></i></button>
+                            <button class="btn-mini btn-renovar-m" onclick="renovar('${loja.id}', 'mensal')" title="Renovar +30 Dias">+30</button>
+                            <button class="btn-mini btn-renovar-a" onclick="renovar('${loja.id}', 'anual')" title="Renovar +1 Ano">+1A</button>
+                            <button class="btn-mini b-del" onclick="apagar('${loja.id}')" title="Apagar"><i class='bx bx-trash'></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += tr;
+        });
     }
 
-    // Copiar Chave ao Clicar
-    window.copiarChave = (chave) => {
-        if(!chave) return;
-        navigator.clipboard.writeText(chave);
-        alert("🔑 Chave copiada: " + chave);
+    // --- FUNÇÕES GLOBAIS ---
+    window.filtrarStatus = (status, btn) => {
+        filtroAtual = status;
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            b.classList.remove('active', 'active-pendente', 'active-vencido');
+        });
+        
+        btn.classList.add('active');
+        if(status === 'pendente') btn.classList.add('active-pendente');
+        if(status === 'vencido') btn.classList.add('active-vencido');
+        
+        renderizarTabela();
+    }
+
+    window.filtrarTexto = () => renderizarTabela();
+
+    window.copiar = (txt) => {
+        navigator.clipboard.writeText(txt);
+        alert("Copiado: " + txt);
     }
 
     window.copiarLink = (id) => {
-        const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-        const link = `${baseUrl}entrada.html?id=${id}`;
-        navigator.clipboard.writeText(link);
-        alert("Link da Capa copiado:\n" + link);
+        const url = `${window.location.href.replace('master.html', '')}entrada.html?id=${id}`;
+        window.copiar(url);
     }
 
-    window.zerarVisitas = async (id) => {
-        if(confirm(`Tem certeza que deseja ZERAR o contador de visitas da loja ${id}?`)) {
-            await set(ref(db, `lojas/${id}/metricas/visitas`), 0);
-        }
-    }
-
-    window.renovar = async (id, dias) => {
-        if(!confirm(`Renovar loja "${id}" por ${dias} dias?`)) return;
+    window.renovar = async (id, tipo) => {
+        const dias = tipo === 'anual' ? 365 : 30;
+        const valor = tipo === 'anual' ? "R$ 249,90" : "R$ 59,90";
         
+        if(!confirm(`CONFIRMA RENOVAÇÃO ${tipo.toUpperCase()}?\n\nLoja: ${id}\nAdicionar: ${dias} dias\nValor: ${valor}`)) return;
+
         const lojaRef = ref(db, `lojas/${id}/config`);
-        const snapshot = await get(lojaRef);
-        const data = snapshot.val();
-        
-        let validadeAtual = new Date(data.validade);
+        const snap = await get(lojaRef);
+        const data = snap.val();
+
+        let validadeAtual = new Date(data.validade || 0);
         const hoje = new Date();
+        // Se já venceu, começa a contar de hoje. Se não, soma na data atual.
         let baseData = (validadeAtual > hoje) ? validadeAtual : hoje;
         baseData.setDate(baseData.getDate() + dias);
-        
-        // Ao renovar, também garante que o status vira ativo
-        await update(lojaRef, { status: "ativo", validade: baseData.toISOString(), plano_escolhido: dias === 365 ? 'anual' : 'mensal' });
+
+        await update(lojaRef, {
+            status: 'ativo',
+            plano_escolhido: tipo,
+            validade: baseData.toISOString()
+        });
+        alert(`Sucesso! Loja renovada até ${baseData.toLocaleDateString('pt-BR')}`);
     }
 
-    window.apagarLoja = async (id) => {
-        if(prompt(`Para apagar a loja "${id}", digite DELETAR:`) === "DELETAR") {
+    window.apagar = async (id) => {
+        if(prompt(`Para DELETAR a loja ${id} digite CONFIRMAR:`) === "CONFIRMAR") {
             await remove(ref(db, `lojas/${id}`));
         }
     }
