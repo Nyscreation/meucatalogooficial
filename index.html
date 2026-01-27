@@ -63,12 +63,18 @@
         button:active { transform: scale(0.98); }
         button:disabled { opacity: 0.7; cursor: wait; }
 
+        /* Estilos dos Botões de Instalação */
+        .install-area { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; }
+        .btn-install { margin-bottom: 10px; font-size: 0.9rem; padding: 12px; }
+        .btn-android { background: #22c55e; box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3); display: none; /* Oculto por padrão */ }
+        .btn-ios { background: #000000; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.2); }
+
         #autoLoginBox { display: none; margin-bottom: 20px; animation: fadeIn 0.5s; }
         .btn-retornar { background: #10b981; margin-bottom: 10px; }
         .link-sair { color: #f87171; font-size: 0.8rem; text-decoration: underline; cursor: pointer; }
         
-        /* Estilos do Modal de Termos */
-        .modal-termos {
+        /* Estilos dos Modais */
+        .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 9999;
             align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;
@@ -76,25 +82,54 @@
         .modal-box {
             background: #1e293b; padding: 25px; border-radius: 16px; width: 100%; max-width: 500px;
             text-align: left; color: #cbd5e1; border: 1px solid #334155;
-            max-height: 80vh; overflow-y: auto;
+            max-height: 80vh; overflow-y: auto; position: relative;
         }
         .modal-box h2 { color: white; margin-top: 0; }
         .modal-box p { font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px; }
+        .close-modal { position: absolute; top: 15px; right: 15px; font-size: 1.5rem; cursor: pointer; }
+
+        /* Instruções iOS Específicas */
+        .ios-step { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; }
+        .ios-icon { font-size: 1.5rem; color: #60a5fa; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div id="modalTermos" class="modal-termos">
+    <div id="modalTermos" class="modal-overlay">
         <div class="modal-box">
             <h2>📜 Termos de Uso</h2>
             <p>Ao criar sua loja, você concorda que:</p>
             <p>1. <strong>Disponibilidade:</strong> O sistema opera em nuvem (online). Embora busquemos 99% de estabilidade, falhas técnicas ou manutenções podem ocorrer.</p>
             <p>2. <strong>Conteúdo:</strong> Você é o único responsável pelos produtos, preços e imagens cadastrados. É proibida a venda de itens ilegais.</p>
-            <p>3. <strong>Pagamento:</strong> O serviço é pré-pago. O não pagamento da renovação (mensal ou anual) resultará no bloqueio automático do acesso administrativo e do catálogo.</p>
-            <p>4. <strong>Dados:</strong> Seus dados de cadastro (WhatsApp e Nome) são utilizados exclusivamente para o funcionamento da plataforma e contato de suporte.</p>
-            <button onclick="document.getElementById('modalTermos').style.display='none'" style="margin-top:10px;">LI E ENTENDI</button>
+            <p>3. <strong>Pagamento:</strong> O serviço é pré-pago. O não pagamento da renovação resultará no bloqueio automático.</p>
+            <button onclick="fecharModal('modalTermos')" style="margin-top:10px;">LI E ENTENDI</button>
+        </div>
+    </div>
+
+    <div id="modalIOS" class="modal-overlay">
+        <div class="modal-box" style="text-align: center;">
+            <div class="close-modal" onclick="fecharModal('modalIOS')">&times;</div>
+            <i class='bx bxl-apple' style="font-size: 3rem; margin-bottom: 10px;"></i>
+            <h2>Instalar no iPhone</h2>
+            <p>O iOS não permite instalação automática. Siga os passos:</p>
+            
+            <div class="ios-step">
+                <i class='bx bx-share' class="ios-icon"></i>
+                <span>1. Toque no ícone de <strong>Compartilhar</strong> (quadrado com seta) na barra inferior.</span>
+            </div>
+            
+            <div class="ios-step">
+                <i class='bx bx-plus-square' class="ios-icon"></i>
+                <span>2. Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong>.</span>
+            </div>
+
+            <div class="ios-step">
+                <span style="font-weight: bold; color: #60a5fa;">3. Confirme clicando em "Adicionar" no topo.</span>
+            </div>
+
+            <button onclick="fecharModal('modalIOS')" style="margin-top:10px; background: #334155;">ENTENDI</button>
         </div>
     </div>
 
@@ -140,7 +175,7 @@
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; text-align: left;">
                 <input type="checkbox" id="checkTermos" style="width: 20px; height: 20px; cursor: pointer;">
                 <span style="font-size: 0.85rem; color: #cbd5e1;">
-                    Li e aceito os <a href="#" onclick="abrirTermos(event)" style="color: #60a5fa; text-decoration: underline;">Termos de Uso</a>
+                    Li e aceito os <a href="#" onclick="abrirModal('modalTermos', event)" style="color: #60a5fa; text-decoration: underline;">Termos de Uso</a>
                 </span>
             </div>
 
@@ -151,11 +186,66 @@
             <div style="margin-top: 20px; font-size: 0.8rem; color: #64748b;">
                 Já tem conta? <a href="#" onclick="loginManual()" style="color:#60a5fa">Entrar</a>
             </div>
+
+            <div class="install-area">
+                <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">Instale nosso App:</p>
+                
+                <button id="btnInstallAndroid" class="btn-install btn-android">
+                    <i class='bx bxl-android' style="font-size: 1.2rem;"></i> INSTALAR NO ANDROID
+                </button>
+                
+                <button onclick="abrirModal('modalIOS', event)" class="btn-install btn-ios">
+                    <i class='bx bxl-apple' style="font-size: 1.2rem;"></i> INSTALAR NO IPHONE
+                </button>
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { db, ref, set, get } from './firebase-config.js';
+
+        // ==========================================
+        // 📲 LÓGICA DE INSTALAÇÃO PWA (ANDROID)
+        // ==========================================
+        let deferredPrompt;
+        const btnAndroid = document.getElementById('btnInstallAndroid');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Previne o comportamento padrão do mini-infobar
+            e.preventDefault();
+            // Guarda o evento para usar depois
+            deferredPrompt = e;
+            // Mostra o botão
+            btnAndroid.style.display = 'flex';
+        });
+
+        btnAndroid.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                // Mostra o prompt de instalação nativo
+                deferredPrompt.prompt();
+                // Espera a escolha do usuário
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`User response to the install prompt: ${outcome}`);
+                // Limpa a variável
+                deferredPrompt = null;
+                // Oculta o botão se instalado
+                if(outcome === 'accepted') {
+                    btnAndroid.style.display = 'none';
+                }
+            }
+        });
+
+        // ==========================================
+        // FUNÇÕES GERAIS E MODAIS
+        // ==========================================
+        window.abrirModal = (id, e) => {
+            if(e) e.preventDefault();
+            document.getElementById(id).style.display = 'flex';
+        }
+
+        window.fecharModal = (id) => {
+            document.getElementById(id).style.display = 'none';
+        }
 
         // VERIFICA SE JÁ TEM LOJA SALVA
         const savedId = localStorage.getItem('minha_loja_id');
@@ -175,15 +265,7 @@
             }
         }
 
-        // FUNÇÃO PARA ABRIR O MODAL DE TERMOS
-        window.abrirTermos = (e) => {
-            e.preventDefault();
-            document.getElementById('modalTermos').style.display = 'flex';
-        }
-
-        // ===========================================
-        // 🔒 SEGURANÇA: VERIFICA SE A LOJA EXISTE
-        // ===========================================
+        // LOGIN MANUAL
         window.loginManual = async () => {
             const nome = prompt("Qual o nome da sua loja (ID)?");
             if(nome) {
@@ -226,7 +308,6 @@
         }
 
         window.contratar = async () => {
-            // VALIDAÇÃO DOS TERMOS DE USO
             const check = document.getElementById('checkTermos');
             if(!check.checked) {
                 alert("⚠️ Você precisa aceitar os Termos de Uso para criar sua loja.");
@@ -248,7 +329,6 @@
                 const snapshot = await get(lojaRef);
 
                 if(!snapshot.exists()) {
-                    // GERAÇÃO DE CÓDIGO SEGURO (Letras e Números)
                     const codigoAtivacao = Math.random().toString(36).substring(2, 6).toUpperCase();
                     
                     await set(lojaRef, {
@@ -259,7 +339,7 @@
                             codigo_secreto: codigoAtivacao,
                             plano_escolhido: selectedPlan,
                             validade: new Date().toISOString(),
-                            aceitou_termos: new Date().toISOString() // REGISTRA O ACEITE
+                            aceitou_termos: new Date().toISOString()
                         },
                         produtos: {}
                     });
@@ -270,7 +350,6 @@
                     const msg = `Olá! Quero ativar a loja *${nome}* no plano *${selectedPlan.toUpperCase()}*. Li e aceito os termos. Aguardo a chave.`;
                     window.open(`https://wa.me/${seuNumero}?text=${encodeURIComponent(msg)}`, '_blank');
                     
-                    // Redireciona para o admin (que vai mostrar a tela de bloqueio)
                     setTimeout(() => {
                         window.location.href = `admin.html?id=${slug}`;
                     }, 1000);
