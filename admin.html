@@ -15,7 +15,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
     
     <style>
-        :root { --primary: #3b82f6; --text: #f1f5f9; --text-muted: #94a3b8; --glass-bg: rgba(255, 255, 255, 0.08); --glass-border: rgba(255, 255, 255, 0.1); --input-bg: rgba(0, 0, 0, 0.3); --marketing: #a855f7; }
+        :root { --primary: #3b82f6; --text: #f1f5f9; --text-muted: #94a3b8; --glass-bg: rgba(255, 255, 255, 0.08); --glass-border: rgba(255, 255, 255, 0.1); --input-bg: rgba(0, 0, 0, 0.3); --marketing: #a855f7; --isca: #facc15; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; } 
         body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0f172a 0%, #172554 100%); background-attachment: fixed; margin: 0; padding: 0; padding-bottom: 90px; color: var(--text); -webkit-font-smoothing: antialiased; min-height: 100vh; }
         .app-header { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 15px 20px; border-bottom: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
@@ -34,6 +34,7 @@
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
         .btn-outline { border: 2px solid var(--primary); background: transparent; color: var(--primary); }
         .btn-zap-share { background: #25D366; color: white; box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3); }
+        .btn-isca { background: var(--isca); color: black; box-shadow: 0 4px 15px rgba(250, 204, 21, 0.4); font-weight: 700; }
         
         .btn-del { color: #f87171; background: rgba(239, 68, 68, 0.1); border: none; padding: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; margin-left: 5px; }
         .btn-mkt { color: var(--marketing); background: rgba(168, 85, 247, 0.15); border: none; padding: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
@@ -59,15 +60,23 @@
         .foto-slot i { font-size: 1.5rem; color: var(--text-muted); }
 
         /* MODAL MARKETING */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; flex-direction: column; padding: 20px; }
-        .modal-content { background: var(--glass-bg); padding: 20px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--glass-border); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; flex-direction: column; padding: 20px; overflow-y: auto; }
+        .modal-content { background: var(--glass-bg); padding: 20px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--glass-border); margin: 20px 0; }
         canvas { width: 100%; height: auto; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        /* MODAL ISCA */
+        .copy-option { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 2px solid transparent; cursor: pointer; transition: 0.2s; text-align: left; }
+        .copy-option:hover { border-color: var(--isca); background: rgba(250, 204, 21, 0.1); }
+        .copy-option.selected { border-color: var(--isca); background: rgba(250, 204, 21, 0.15); }
+        .copy-label { font-size: 0.75rem; color: var(--isca); font-weight: 700; margin-bottom: 5px; display: block; }
+        .copy-text { font-size: 0.85rem; color: white; line-height: 1.5; white-space: pre-line; }
     </style>
 </head>
 <body>
 
     <div id="toast" class="toast"><i class='bx bx-check-circle'></i> <span>Salvo com sucesso!</span></div>
 
+    <!-- MODAL MARKETING PADRÃO -->
     <div id="modalMkt" class="modal-overlay">
         <div class="modal-content">
             <h3 style="margin-top:0; color:white;">Postar no Status 📸</h3>
@@ -77,6 +86,55 @@
                 <i class='bx bxl-whatsapp'></i> Compartilhar Imagem
             </button>
             <button onclick="fecharMkt()" class="btn btn-outline" style="border-color: #64748b; color: #cbd5e1;">Fechar</button>
+        </div>
+    </div>
+
+    <!-- MODAL ISCA -->
+    <div id="modalIsca" class="modal-overlay">
+        <div class="modal-content" style="max-width: 450px;">
+            <h3 style="margin-top:0; color:var(--isca); display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <i class='bx bxs-hot'></i> OFERTA RELÂMPAGO
+            </h3>
+            
+            <label style="display: block; text-align: left; margin-bottom: 5px;">Escolha o Produto Isca:</label>
+            <select id="selectProdutoIsca" style="margin-bottom: 15px;">
+                <option value="">Carregando produtos...</option>
+            </select>
+            
+            <label style="display: block; text-align: left; margin-bottom: 5px;">Cidade (aparecer no card):</label>
+            <input type="text" id="inputCidadeIsca" placeholder="Ex: Tefé, Manaus..." style="margin-bottom: 15px;">
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <div>
+                    <label style="display: block; text-align: left; margin-bottom: 5px;">Preço Normal:</label>
+                    <input type="number" id="inputPrecoNormal" placeholder="50.00" step="0.01">
+                </div>
+                <div>
+                    <label style="display: block; text-align: left; margin-bottom: 5px;">Preço ISCA:</label>
+                    <input type="number" id="inputPrecoIsca" placeholder="29.90" step="0.01">
+                </div>
+            </div>
+            
+            <button onclick="gerarIsca()" class="btn btn-isca" style="margin-bottom: 10px;">
+                <i class='bx bxs-magic-wand'></i> GERAR ISCA
+            </button>
+            <button onclick="fecharIsca()" class="btn btn-outline" style="border-color: #64748b; color: #cbd5e1;">Cancelar</button>
+        </div>
+        
+        <div id="iscaResultado" class="modal-content" style="display: none; max-width: 450px;">
+            <h3 style="margin-top:0; color:white;">📱 Sua Isca está Pronta!</h3>
+            <canvas id="canvasIsca" width="1080" height="1920"></canvas>
+            
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 15px 0 10px 0;">
+                Escolha o texto que deseja usar:
+            </p>
+            
+            <div id="copyOptions"></div>
+            
+            <button onclick="compartilharIsca()" class="btn btn-zap-share" style="margin-bottom: 10px;">
+                <i class='bx bxl-whatsapp'></i> Enviar no WhatsApp
+            </button>
+            <button onclick="voltarIsca()" class="btn btn-outline" style="border-color: #64748b; color: #cbd5e1;">Fazer Outra</button>
         </div>
     </div>
 
@@ -97,11 +155,27 @@
             </div>
             <p style="color: rgba(255,255,255,0.7); font-size: 0.8rem; margin: 0;">Pessoas que acessaram seu catálogo</p>
         </div>
+        
+        <div class="card" style="background: linear-gradient(135deg, var(--isca) 0%, #eab308 100%); border: none; cursor: pointer;" onclick="abrirModalIsca()">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <h2 style="margin: 0; color: black; font-size: 1.3rem;">
+                        <i class='bx bxs-hot' style="color: #dc2626;"></i> CRIAR ISCA
+                    </h2>
+                    <p style="color: rgba(0,0,0,0.7); font-size: 0.85rem; margin: 5px 0 0 0;">
+                        Oferta irresistível para atrair clientes
+                    </p>
+                </div>
+                <i class='bx bx-right-arrow-alt' style="font-size: 2.5rem; color: black; opacity: 0.5;"></i>
+            </div>
+        </div>
+        
         <div class="card">
             <h2>Dicas</h2>
             <ul style="padding-left: 20px; color: var(--text-muted); font-size: 0.9rem;">
                 <li>Divulgue o link no Instagram Bio.</li>
                 <li>Use o botão roxo nos produtos para criar posts de Status.</li>
+                <li>Use a ISCA para produtos com desconto real e urgência.</li>
             </ul>
         </div>
     </div>
@@ -156,6 +230,7 @@
             <label>Nome da Loja</label><input type="text" id="confNome">
             <label>WhatsApp</label><input type="tel" id="confZap">
             <label>Endereço</label><input type="text" id="confEnd">
+            <label>Cidade</label><input type="text" id="confCidade" placeholder="Ex: Tefé, Manaus...">
             <button id="btnSalvarConfig" class="btn btn-primary">Salvar Tudo</button>
         </div>
         <div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 20px;">Plano válido até: <strong style="color:white" id="txtValidade">...</strong></div>
@@ -175,7 +250,7 @@
                 <i class='bx bx-copy'></i> Copiar Link
             </button>
         </div>
-        <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">Versão 11.0 Proxy</div>
+        <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 30px;">Versão 12.0 com ISCA</div>
     </div>
 
     <nav class="bottom-nav">
@@ -193,8 +268,10 @@
     let PLANO_ATUAL = "mensal"; 
     let TOTAL_PRODUTOS = 0;
     let LOJA_NOME_GLOBAL = "";
+    let CIDADE_GLOBAL = "";
+    let PRODUTO_ISCA_SELECIONADO = null;
+    let TEXTO_COPY_SELECIONADO = 0;
     
-    // CACHE GLOBAL DE PRODUTOS
     window.PRODUTOS_CACHE = {};
 
     if (!LOJA_ID) {
@@ -204,7 +281,6 @@
     }
     document.getElementById('displayId').innerText = LOJA_ID;
 
-    // === PWA ===
     if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); }); }
     let deferredPrompt; window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; const btn = document.getElementById('btnInstall'); btn.style.display = 'block'; btn.addEventListener('click', () => { deferredPrompt.prompt(); }); });
 
@@ -250,7 +326,6 @@
         return await getDownloadURL(storageRef);
     }
 
-    // === CARREGAR DADOS E SISTEMA DE BLOQUEIO ===
     const configRef = ref(db, `lojas/${LOJA_ID}/config`);
     
     onValue(configRef, (snapshot) => {
@@ -271,11 +346,14 @@
 
         PLANO_ATUAL = data.plano_escolhido || "mensal";
         LOJA_NOME_GLOBAL = data.nome || "Minha Loja";
+        CIDADE_GLOBAL = data.cidade || "";
+        
         if (!document.getElementById('confNome')) { window.location.reload(); return; }
 
         document.getElementById('confNome').value = data.nome || "";
         document.getElementById('confEnd').value = data.endereco || "";
         document.getElementById('confZap').value = data.zap || "";
+        document.getElementById('confCidade').value = data.cidade || "";
         document.getElementById('txtValidade').innerText = new Date(data.validade).toLocaleDateString('pt-BR');
 
         const fotos = data.fotos_loja || [];
@@ -294,7 +372,15 @@
             let listaFotos = dadosAtuais.fotos_loja || [];
             for(let i=1; i<=5; i++) { const fileInput = document.getElementById(`f${i}`); if(fileInput.files[0]) { const url = await enviarParaNuvem(fileInput.files[0], 'loja'); listaFotos[i-1] = url; } }
             const capaPrincipal = listaFotos[0] || dadosAtuais.capa || "";
-            await set(configRef, { ...dadosAtuais, nome: document.getElementById('confNome').value, endereco: document.getElementById('confEnd').value, zap: document.getElementById('confZap').value, capa: capaPrincipal, fotos_loja: listaFotos });
+            await set(configRef, { 
+                ...dadosAtuais, 
+                nome: document.getElementById('confNome').value, 
+                endereco: document.getElementById('confEnd').value, 
+                zap: document.getElementById('confZap').value, 
+                cidade: document.getElementById('confCidade').value,
+                capa: capaPrincipal, 
+                fotos_loja: listaFotos 
+            });
             showToast("Atualizado!");
         } catch(e) { alert("Erro: " + e.message); } finally { btn.innerText = "Salvar Tudo"; btn.disabled = false; }
     });
@@ -323,6 +409,7 @@
                     </button>
                 </div>`; 
             });
+            carregarProdutosNoSelect();
         } else { TOTAL_PRODUTOS = 0; div.innerHTML = "<div style='text-align:center; padding:20px; color:#64748b'>Vazio.</div>"; }
         atualizarBadgeLimite();
     });
@@ -354,7 +441,7 @@
     window.deletar = async (id) => { if(confirm("Apagar?")) await remove(ref(db, `lojas/${LOJA_ID}/produtos/${id}`)); }
 
     // ==========================================
-    // 🎨 MÁQUINA DE MARKETING COM PROXY (O Segredo)
+    // 🎨 MÁQUINA DE MARKETING PADRÃO
     // ==========================================
     window.abrirGerador = async (id) => {
         const p = window.PRODUTOS_CACHE[id];
@@ -362,10 +449,6 @@
         
         const nome = p.nome;
         const preco = p.preco;
-        
-        // --- AQUI ESTÁ A CORREÇÃO MÁGICA ---
-        // Usamos um proxy (weserv.nl) que adiciona a permissão CORS na imagem.
-        // Assim o navegador deixa o Canvas ler a foto sem bloquear.
         const imgUrl = `https://images.weserv.nl/?url=${encodeURIComponent(p.img)}&n=-1`;
 
         const modal = document.getElementById('modalMkt');
@@ -389,13 +472,11 @@
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, 1080, 1920);
 
-            // Nome da Loja
             ctx.fillStyle = "#fff";
             ctx.font = "bold 60px Inter, sans-serif";
             ctx.textAlign = "center";
             ctx.fillText(LOJA_NOME_GLOBAL.toUpperCase(), 540, 150);
 
-            // Foto
             const size = 900;
             const x = (1080 - size) / 2;
             const y = 400;
@@ -459,7 +540,7 @@
         img.crossOrigin = "anonymous"; 
         img.onload = () => desenharCard(img, true);
         img.onerror = () => desenharCard(null, false);
-        img.src = imgUrl; // Carrega a url do Proxy
+        img.src = imgUrl;
     }
 
     window.fecharMkt = () => { document.getElementById('modalMkt').style.display = "none"; }
@@ -482,7 +563,293 @@
         });
     }
 
+    // ==========================================
+    // 🔥 SISTEMA ISCA COMPLETO
+    // ==========================================
+    
+    function carregarProdutosNoSelect() {
+        const select = document.getElementById('selectProdutoIsca');
+        select.innerHTML = '<option value="">Selecione um produto...</option>';
+        
+        const produtos = window.PRODUTOS_CACHE;
+        if (!produtos) return;
+        
+        Object.keys(produtos).forEach(key => {
+            const p = produtos[key];
+            const option = document.createElement('option');
+            option.value = key;
+            option.text = `${p.nome} - R$ ${p.preco}`;
+            select.appendChild(option);
+        });
+    }
+
+    window.abrirModalIsca = () => {
+        carregarProdutosNoSelect();
+        document.getElementById('inputCidadeIsca').value = CIDADE_GLOBAL;
+        document.getElementById('modalIsca').style.display = "flex";
+        document.getElementById('iscaResultado').style.display = "none";
+    }
+
+    window.fecharIsca = () => {
+        document.getElementById('modalIsca').style.display = "none";
+    }
+
+    window.voltarIsca = () => {
+        document.getElementById('iscaResultado').style.display = "none";
+    }
+
+    window.gerarIsca = async () => {
+        const produtoId = document.getElementById('selectProdutoIsca').value;
+        const cidade = document.getElementById('inputCidadeIsca').value.trim();
+        const precoNormal = parseFloat(document.getElementById('inputPrecoNormal').value);
+        const precoIsca = parseFloat(document.getElementById('inputPrecoIsca').value);
+        
+        if (!produtoId) return alert("Selecione um produto!");
+        if (!cidade) return alert("Digite a cidade!");
+        if (!precoNormal || !precoIsca) return alert("Preencha os preços!");
+        if (precoIsca >= precoNormal) return alert("O preço ISCA deve ser menor que o normal!");
+        
+        const produto = window.PRODUTOS_CACHE[produtoId];
+        PRODUTO_ISCA_SELECIONADO = { ...produto, precoNormal, precoIsca, cidade };
+        
+        await desenharCardIsca(produto, cidade, precoNormal, precoIsca);
+        gerarOpcoesTexto(produto, cidade, precoNormal, precoIsca);
+        
+        document.getElementById('iscaResultado').style.display = "block";
+        document.querySelector('#modalIsca .modal-content').style.display = "none";
+    }
+
+    async function desenharCardIsca(produto, cidade, precoNormal, precoIsca) {
+        const canvas = document.getElementById('canvasIsca');
+        const ctx = canvas.getContext('2d');
+        
+        // Fundo AMARELO/VERMELHO vibrante
+        const grad = ctx.createLinearGradient(0, 0, 0, 1920);
+        grad.addColorStop(0, '#fbbf24'); // Amarelo
+        grad.addColorStop(1, '#f59e0b'); // Laranja
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 1080, 1920);
+
+        // TOPO: OFERTA RELÂMPAGO
+        ctx.fillStyle = "#dc2626";
+        ctx.beginPath();
+        ctx.roundRect(90, 80, 900, 140, 20);
+        ctx.fill();
+        
+        ctx.fillStyle = "white";
+        ctx.font = "bold 70px Inter, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("⚡ OFERTA RELÂMPAGO ⚡", 540, 150);
+
+        // SELO DE LOCALIZAÇÃO
+        ctx.fillStyle = "rgba(0,0,0,0.7)";
+        ctx.beginPath();
+        ctx.roundRect(90, 250, 500, 80, 40);
+        ctx.fill();
+        
+        ctx.fillStyle = "#facc15";
+        ctx.font = "bold 40px Inter, sans-serif";
+        ctx.textAlign = "left";
+        ctx.fillText(`📍 ${cidade.toUpperCase()}`, 120, 290);
+
+        // FOTO DO PRODUTO
+        const imgUrl = `https://images.weserv.nl/?url=${encodeURIComponent(produto.img)}&n=-1`;
+        const size = 800;
+        const x = (1080 - size) / 2;
+        const y = 400;
+
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        
+        await new Promise((resolve) => {
+            img.onload = () => {
+                let sx, sy, sw, sh;
+                if (img.width > img.height) { 
+                    sh = img.height; 
+                    sw = img.height; 
+                    sx = (img.width - img.height) / 2; 
+                    sy = 0; 
+                } else { 
+                    sw = img.width; 
+                    sh = img.width; 
+                    sy = (img.height - img.width) / 2; 
+                    sx = 0; 
+                }
+                
+                ctx.save();
+                ctx.beginPath();
+                ctx.roundRect(x, y, size, size, 30);
+                ctx.clip();
+                ctx.drawImage(img, sx, sy, sw, sh, x, y, size, size);
+                ctx.restore();
+                
+                // Borda branca
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 15;
+                ctx.strokeRect(x, y, size, size);
+                
+                resolve();
+            };
+            img.onerror = resolve;
+            img.src = imgUrl;
+        });
+
+        // NOME DO PRODUTO
+        ctx.fillStyle = "black";
+        ctx.font = "bold 70px Inter, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "alphabetic";
+        
+        const nomeProduto = produto.nome.toUpperCase();
+        if (ctx.measureText(nomeProduto).width > 950) {
+            ctx.font = "bold 55px Inter, sans-serif";
+        }
+        ctx.fillText(nomeProduto, 540, 1320);
+
+        // PREÇO DE/POR
+        ctx.fillStyle = "rgba(0,0,0,0.6)";
+        ctx.font = "bold 50px Inter, sans-serif";
+        ctx.fillText("DE:", 540, 1420);
+        
+        // Preço Normal Riscado
+        const precoNormalTexto = `R$ ${precoNormal.toFixed(2).replace('.', ',')}`;
+        ctx.fillStyle = "#dc2626";
+        ctx.font = "bold 80px Inter, sans-serif";
+        const larguraNormal = ctx.measureText(precoNormalTexto).width;
+        ctx.fillText(precoNormalTexto, 540, 1520);
+        
+        // Linha de risco
+        ctx.strokeStyle = "#dc2626";
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.moveTo(540 - larguraNormal/2, 1490);
+        ctx.lineTo(540 + larguraNormal/2, 1490);
+        ctx.stroke();
+
+        // POR:
+        ctx.fillStyle = "rgba(0,0,0,0.6)";
+        ctx.font = "bold 50px Inter, sans-serif";
+        ctx.fillText("POR:", 540, 1600);
+
+        // PREÇO ISCA GIGANTE
+        const precoIscaTexto = `R$ ${precoIsca.toFixed(2).replace('.', ',')}`;
+        ctx.font = "bold 150px Inter, sans-serif";
+        const larguraIsca = ctx.measureText(precoIscaTexto).width;
+        
+        // Fundo do preço
+        ctx.fillStyle = "#22c55e";
+        ctx.beginPath();
+        ctx.roundRect(540 - (larguraIsca/2) - 50, 1630, larguraIsca + 100, 200, 25);
+        ctx.fill();
+        
+        ctx.fillStyle = "white";
+        ctx.textBaseline = "middle";
+        ctx.fillText(precoIscaTexto, 540, 1730);
+
+        // RODAPÉ: SÓ NO LINK ABAIXO
+        ctx.fillStyle = "#dc2626";
+        ctx.beginPath();
+        ctx.roundRect(140, 1810, 800, 100, 50);
+        ctx.fill();
+        
+        ctx.font = "bold 45px Inter, sans-serif";
+        ctx.fillStyle = "white";
+        ctx.textBaseline = "alphabetic";
+        ctx.fillText("👇 SÓ NO LINK ABAIXO 👇", 540, 1870);
+    }
+
+    function gerarOpcoesTexto(produto, cidade, precoNormal, precoIsca) {
+        const linkLoja = window.location.href.replace("admin.html", "entrada.html");
+        const economia = (precoNormal - precoIsca).toFixed(2);
+        
+        const opcoes = [
+            `🔥 OFERTA DO DIA ${LOJA_NOME_GLOBAL.toUpperCase()} 🔥
+
+De: ~~R$ ${precoNormal.toFixed(2).replace('.', ',')}~~
+Por: R$ ${precoIsca.toFixed(2).replace('.', ',')}
+
+📍 ${cidade}
+É só hoje! Compre pelo nosso catálogo:
+👉 ${linkLoja}`,
+
+            `⚡ PROMOÇÃO RELÂMPAGO ⚡
+
+${produto.nome.toUpperCase()}
+Economia de R$ ${economia.replace('.', ',')}!
+
+De R$ ${precoNormal.toFixed(2).replace('.', ',')} por R$ ${precoIsca.toFixed(2).replace('.', ',')}
+
+📍 Apenas em ${cidade}
+Garanta o seu:
+👉 ${linkLoja}`,
+
+            `🎯 ÚLTIMA CHANCE!
+
+${produto.nome} com SUPER DESCONTO
+R$ ${precoIsca.toFixed(2).replace('.', ',')} (antes R$ ${precoNormal.toFixed(2).replace('.', ',')})
+
+Vagas limitadas em ${cidade}!
+Peça agora:
+👉 ${linkLoja}`
+        ];
+
+        const container = document.getElementById('copyOptions');
+        container.innerHTML = '';
+        
+        opcoes.forEach((texto, index) => {
+            const div = document.createElement('div');
+            div.className = 'copy-option';
+            if (index === 0) div.classList.add('selected');
+            div.onclick = () => {
+                document.querySelectorAll('.copy-option').forEach(el => el.classList.remove('selected'));
+                div.classList.add('selected');
+                TEXTO_COPY_SELECIONADO = index;
+            };
+            
+            div.innerHTML = `
+                <span class="copy-label">OPÇÃO ${index + 1}</span>
+                <div class="copy-text">${texto}</div>
+            `;
+            
+            container.appendChild(div);
+        });
+    }
+
+    window.compartilharIsca = () => {
+        const canvas = document.getElementById('canvasIsca');
+        const textoSelecionado = document.querySelectorAll('.copy-option')[TEXTO_COPY_SELECIONADO].querySelector('.copy-text').innerText;
+        
+        canvas.toBlob(async (blob) => {
+            const file = new File([blob], "isca-relampago.png", { type: "image/png" });
+            
+            // Copia o texto primeiro
+            navigator.clipboard.writeText(textoSelecionado);
+            showToast("Texto copiado! Enviando imagem...");
+            
+            if (navigator.share) {
+                try { 
+                    await navigator.share({ 
+                        files: [file], 
+                        title: 'Oferta Relâmpago', 
+                        text: textoSelecionado 
+                    }); 
+                } catch (error) { 
+                    console.log("Erro share", error); 
+                    const link = document.createElement('a'); 
+                    link.download = 'isca-relampago.png'; 
+                    link.href = canvas.toDataURL(); 
+                    link.click();
+                }
+            } else {
+                const link = document.createElement('a'); 
+                link.download = 'isca-relampago.png'; 
+                link.href = canvas.toDataURL(); 
+                link.click();
+            }
+        });
+    }
+
 </script>
 </body>
 </html>
-
