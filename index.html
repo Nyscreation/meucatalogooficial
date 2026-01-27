@@ -23,7 +23,6 @@
             width: 100%; max-width: 400px; 
             box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
             text-align: center;
-            display: flex; flex-direction: column;
         }
         
         h1 { font-size: 2rem; margin: 0 0 10px 0; background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -32,6 +31,7 @@
         .input-group { margin-bottom: 15px; text-align: left; }
         label { font-size: 0.8rem; font-weight: 600; color: #cbd5e1; margin-left: 5px; display: block; margin-bottom: 5px; }
         
+        /* Ajuste para inputs de texto */
         input:not([type="checkbox"]) { 
             width: 100%; padding: 16px; border-radius: 12px; 
             border: 1px solid rgba(255,255,255,0.1); 
@@ -63,30 +63,12 @@
         button:active { transform: scale(0.98); }
         button:disabled { opacity: 0.7; cursor: wait; }
 
-        /* Estilos dos Botões de Instalação - CORRIGIDO */
-        .install-area { 
-            margin-top: 30px; 
-            border-top: 1px solid rgba(255,255,255,0.1); 
-            padding-top: 20px; 
-            width: 100%;
-        }
-        .btn-install { margin-bottom: 10px; font-size: 0.9rem; padding: 12px; width: 100%; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 8px;}
-        
-        .btn-android { 
-            background: #22c55e; 
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3); 
-            /* Removi o display: none para aparecer sempre no layout */
-        }
-        
-        .btn-ios { background: #000000; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.2); }
-
-        #autoLoginBox { display: none; margin-bottom: 20px; animation: fadeIn 0.5s; width: 100%; }
-        #formBox { width: 100%; }
-
+        #autoLoginBox { display: none; margin-bottom: 20px; animation: fadeIn 0.5s; }
         .btn-retornar { background: #10b981; margin-bottom: 10px; }
         .link-sair { color: #f87171; font-size: 0.8rem; text-decoration: underline; cursor: pointer; }
         
-        .modal-overlay {
+        /* Estilos do Modal de Termos */
+        .modal-termos {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 9999;
             align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;
@@ -94,47 +76,29 @@
         .modal-box {
             background: #1e293b; padding: 25px; border-radius: 16px; width: 100%; max-width: 500px;
             text-align: left; color: #cbd5e1; border: 1px solid #334155;
-            max-height: 80vh; overflow-y: auto; position: relative;
+            max-height: 80vh; overflow-y: auto;
         }
         .modal-box h2 { color: white; margin-top: 0; }
         .modal-box p { font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px; }
-        .close-modal { position: absolute; top: 15px; right: 15px; font-size: 1.5rem; cursor: pointer; }
-
-        .ios-step { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; }
-        .ios-icon { font-size: 1.5rem; color: #60a5fa; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div id="modalTermos" class="modal-overlay">
+    <div id="modalTermos" class="modal-termos">
         <div class="modal-box">
             <h2>📜 Termos de Uso</h2>
-            <p>Termos simplificados para teste...</p>
-            <button onclick="fecharModal('modalTermos')" style="margin-top:10px;">LI E ENTENDI</button>
-        </div>
-    </div>
-
-    <div id="modalIOS" class="modal-overlay">
-        <div class="modal-box" style="text-align: center;">
-            <div class="close-modal" onclick="fecharModal('modalIOS')">&times;</div>
-            <i class='bx bxl-apple' style="font-size: 3rem; margin-bottom: 10px;"></i>
-            <h2>Instalar no iPhone</h2>
-            <p>O iOS não permite instalação automática. Siga os passos:</p>
-            <div class="ios-step"><i class='bx bx-share ios-icon'></i><span>1. Toque em <strong>Compartilhar</strong>.</span></div>
-            <div class="ios-step"><i class='bx bx-plus-square ios-icon'></i><span>2. Toque em <strong>"Adicionar à Tela de Início"</strong>.</span></div>
-            <div class="ios-step"><span style="font-weight: bold; color: #60a5fa;">3. Confirme em "Adicionar".</span></div>
-            <button onclick="fecharModal('modalIOS')" style="margin-top:10px; background: #334155;">ENTENDI</button>
+            <p>Ao criar sua loja, você concorda que:</p>
+            <p>1. <strong>Disponibilidade:</strong> O sistema opera em nuvem (online). Embora busquemos 99% de estabilidade, falhas técnicas ou manutenções podem ocorrer.</p>
+            <p>2. <strong>Conteúdo:</strong> Você é o único responsável pelos produtos, preços e imagens cadastrados. É proibida a venda de itens ilegais.</p>
+            <p>3. <strong>Pagamento:</strong> O serviço é pré-pago. O não pagamento da renovação (mensal ou anual) resultará no bloqueio automático do acesso administrativo e do catálogo.</p>
+            <p>4. <strong>Dados:</strong> Seus dados de cadastro (WhatsApp e Nome) são utilizados exclusivamente para o funcionamento da plataforma e contato de suporte.</p>
+            <button onclick="document.getElementById('modalTermos').style.display='none'" style="margin-top:10px;">LI E ENTENDI</button>
         </div>
     </div>
 
     <div class="container">
-        
-        <div style="margin-bottom: 20px;">
-            <i class='bx bxs-store' style="font-size: 3rem; color: #60a5fa;"></i>
-        </div>
-
         <div id="autoLoginBox">
             <p>👋 Bem-vindo de volta!</p>
             <button onclick="irParaLojaSalva()" class="btn-retornar">
@@ -165,6 +129,7 @@
                     <div class="plano-nome">Mensal</div>
                     <div class="plano-preco">R$ 59,90</div>
                 </div>
+
                 <div class="plano-card" onclick="selectPlan('anual', 249.90)" id="card-anual">
                     <i class='bx bx-check check-icon'></i>
                     <div class="plano-nome">Anual</div>
@@ -175,7 +140,7 @@
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; text-align: left;">
                 <input type="checkbox" id="checkTermos" style="width: 20px; height: 20px; cursor: pointer;">
                 <span style="font-size: 0.85rem; color: #cbd5e1;">
-                    Li e aceito os <a href="#" onclick="abrirModal('modalTermos', event)" style="color: #60a5fa; text-decoration: underline;">Termos de Uso</a>
+                    Li e aceito os <a href="#" onclick="abrirTermos(event)" style="color: #60a5fa; text-decoration: underline;">Termos de Uso</a>
                 </span>
             </div>
 
@@ -187,54 +152,12 @@
                 Já tem conta? <a href="#" onclick="loginManual()" style="color:#60a5fa">Entrar</a>
             </div>
         </div>
-
-        <div class="install-area">
-            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">Instale nosso App:</p>
-            
-            <button id="btnInstallAndroid" class="btn-install btn-android">
-                <i class='bx bxl-android' style="font-size: 1.2rem;"></i> INSTALAR NO ANDROID
-            </button>
-            
-            <button onclick="abrirModal('modalIOS', event)" class="btn-install btn-ios">
-                <i class='bx bxl-apple' style="font-size: 1.2rem;"></i> INSTALAR NO IPHONE
-            </button>
-        </div>
-
     </div>
 
     <script type="module">
         import { db, ref, set, get } from './firebase-config.js';
 
-        // LÓGICA DO PWA (ANDROID)
-        let deferredPrompt;
-        const btnAndroid = document.getElementById('btnInstallAndroid');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            console.log("App pronto para instalar");
-        });
-
-        btnAndroid.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                deferredPrompt = null;
-            } else {
-                alert("Para instalar no Android: \n1. Toque nos 3 pontinhos do navegador.\n2. Escolha 'Adicionar à tela inicial' ou 'Instalar App'.");
-            }
-        });
-
-        // MODAIS
-        window.abrirModal = (id, e) => {
-            if(e) e.preventDefault();
-            document.getElementById(id).style.display = 'flex';
-        }
-        window.fecharModal = (id) => {
-            document.getElementById(id).style.display = 'none';
-        }
-
-        // LÓGICA DE LOJA SALVA
+        // VERIFICA SE JÁ TEM LOJA SALVA
         const savedId = localStorage.getItem('minha_loja_id');
         if (savedId) {
             document.getElementById('autoLoginBox').style.display = 'block';
@@ -246,32 +169,50 @@
         }
 
         window.esquecerLoja = () => {
-            if(confirm("Deseja desconectar?")) {
+            if(confirm("Deseja desconectar da loja salva?")) {
                 localStorage.removeItem('minha_loja_id');
                 location.reload();
             }
         }
 
-        // LOGIN MANUAL
+        // FUNÇÃO PARA ABRIR O MODAL DE TERMOS
+        window.abrirTermos = (e) => {
+            e.preventDefault();
+            document.getElementById('modalTermos').style.display = 'flex';
+        }
+
+        // ===========================================
+        // 🔒 SEGURANÇA: VERIFICA SE A LOJA EXISTE
+        // ===========================================
         window.loginManual = async () => {
-            const nome = prompt("Nome da loja:");
+            const nome = prompt("Qual o nome da sua loja (ID)?");
             if(nome) {
                 const slug = criarSlug(nome);
-                const lojaRef = ref(db, 'lojas/' + slug);
-                const snapshot = await get(lojaRef);
-                if (snapshot.exists()) {
-                    localStorage.setItem('minha_loja_id', slug);
-                    window.location.href = `admin.html?id=${slug}`;
-                } else {
-                    alert("Loja não encontrada.");
+                document.body.style.cursor = 'wait';
+                try {
+                    const lojaRef = ref(db, 'lojas/' + slug);
+                    const snapshot = await get(lojaRef);
+
+                    if (snapshot.exists()) {
+                        localStorage.setItem('minha_loja_id', slug);
+                        window.location.href = `admin.html?id=${slug}`;
+                    } else {
+                        alert("❌ Loja não encontrada!\nVerifique se digitou o nome corretamente ou crie uma nova conta.");
+                    }
+                } catch(e) {
+                    alert("Erro de conexão. Tente novamente.");
+                } finally {
+                    document.body.style.cursor = 'default';
                 }
             }
         }
 
-        // SELEÇÃO DE PLANO E CRIAÇÃO
         let selectedPlan = 'mensal';
+        let selectedPrice = 59.90;
+
         window.selectPlan = (plan, price) => {
             selectedPlan = plan;
+            selectedPrice = price;
             document.querySelectorAll('.plano-card').forEach(c => c.classList.remove('selected'));
             document.getElementById(`card-${plan}`).classList.add('selected');
         }
@@ -285,24 +226,63 @@
         }
 
         window.contratar = async () => {
-            if(!document.getElementById('checkTermos').checked) return alert("Aceite os termos.");
+            // VALIDAÇÃO DOS TERMOS DE USO
+            const check = document.getElementById('checkTermos');
+            if(!check.checked) {
+                alert("⚠️ Você precisa aceitar os Termos de Uso para criar sua loja.");
+                return;
+            }
+
+            const btn = document.getElementById('btnCriar');
             const nome = document.getElementById('nomeLoja').value;
             const zap = document.getElementById('zapLoja').value;
-            if(!nome || !zap) return alert("Preencha tudo.");
-
-            const slug = criarSlug(nome);
-            const lojaRef = ref(db, 'lojas/' + slug);
             
-            // Simulação de criação (mantive simplificado para não quebrar o layout)
-            const snapshot = await get(lojaRef);
-            if(!snapshot.exists()) {
-                await set(lojaRef, {
-                    config: { nome, zap, status: "pendente", plano: selectedPlan }
-                });
-                localStorage.setItem('minha_loja_id', slug);
-                window.location.href = `admin.html?id=${slug}`;
-            } else {
-                alert("Nome já existe.");
+            if(!nome || !zap) return alert("Preencha todos os campos!");
+            
+            btn.disabled = true;
+            btn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Criando...";
+
+            try {
+                const slug = criarSlug(nome);
+                const lojaRef = ref(db, 'lojas/' + slug);
+                const snapshot = await get(lojaRef);
+
+                if(!snapshot.exists()) {
+                    // GERAÇÃO DE CÓDIGO SEGURO (Letras e Números)
+                    const codigoAtivacao = Math.random().toString(36).substring(2, 6).toUpperCase();
+                    
+                    await set(lojaRef, {
+                        config: { 
+                            nome: nome, 
+                            zap: zap, 
+                            status: "pendente",
+                            codigo_secreto: codigoAtivacao,
+                            plano_escolhido: selectedPlan,
+                            validade: new Date().toISOString(),
+                            aceitou_termos: new Date().toISOString() // REGISTRA O ACEITE
+                        },
+                        produtos: {}
+                    });
+                    
+                    localStorage.setItem('minha_loja_id', slug);
+
+                    const seuNumero = "5597984431811"; 
+                    const msg = `Olá! Quero ativar a loja *${nome}* no plano *${selectedPlan.toUpperCase()}*. Li e aceito os termos. Aguardo a chave.`;
+                    window.open(`https://wa.me/${seuNumero}?text=${encodeURIComponent(msg)}`, '_blank');
+                    
+                    // Redireciona para o admin (que vai mostrar a tela de bloqueio)
+                    setTimeout(() => {
+                        window.location.href = `admin.html?id=${slug}`;
+                    }, 1000);
+                } else {
+                    alert("Essa loja já existe! Se for sua, clique em 'Entrar'.");
+                    btn.disabled = false;
+                    btn.innerHTML = "Tentar Outro Nome";
+                }
+            } catch (e) {
+                alert("Erro: " + e.message);
+                btn.disabled = false;
+                btn.innerText = "CRIAR AGORA";
             }
         }
     </script>
