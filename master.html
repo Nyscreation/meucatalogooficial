@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel GOD MODE - V3.1</title>
+    <title>Painel GOD MODE - V3.2 (Anti-Loop)</title>
     
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -38,7 +38,7 @@
         .filter-group { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
         .filter-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 8px 16px; border-radius: 50px; cursor: pointer; font-size: 0.85rem; transition: 0.3s; white-space: nowrap; }
         .filter-btn:hover, .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .filter-btn.active-pendente { background: var(--warning); color: black; border-color: var(--warning); }
+        .filter-btn.active-bloq { background: #b91c1c; color: white; border-color: #b91c1c; }
         .filter-btn.active-vencido { background: var(--danger); color: white; border-color: var(--danger); }
 
         .search-box { position: relative; width: 100%; }
@@ -57,10 +57,12 @@
         
         /* BADGES */
         .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
-        .st-pendente { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); animation: pulse 2s infinite; }
+        
+        .st-novo { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .st-bloq { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; }
+        
         .st-ativo { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .st-vencido { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
-        @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
 
         .plano-badge { padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
         .pl-mensal { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
@@ -75,7 +77,6 @@
         .b-copy { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
         .b-del { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
         
-        /* BOTÃO BLOQUEIO - V3.1 */
         .b-lock { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
         .b-unlock { background: rgba(16, 185, 129, 0.1); color: #10b981; }
 
@@ -95,7 +96,7 @@
     <div id="loginScreen">
         <div class="login-box">
             <i class='bx bxs-shield-plus' style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"></i>
-            <h2>GOD MODE V3.1</h2>
+            <h2>GOD MODE V3.2</h2>
             <input type="password" id="senhaInput" placeholder="Senha Mestra">
             <button onclick="verificarSenha()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">ACESSAR PAINEL</button>
         </div>
@@ -104,7 +105,7 @@
     <div id="painel" style="display:none">
         
         <div class="header">
-            <h1><i class='bx bxs-dashboard'></i> Painel Master <span class="badge-god">V 3.1</span></h1>
+            <h1><i class='bx bxs-dashboard'></i> Painel Master <span class="badge-god">V 3.2</span></h1>
             <button onclick="location.reload()" style="background:none; border:1px solid #334155; color:#f87171; padding:8px 15px; border-radius:8px; cursor:pointer;">Sair</button>
         </div>
 
@@ -137,10 +138,10 @@
         <div class="toolbar">
             <div class="filter-group">
                 <button class="filter-btn active" onclick="filtrarStatus('todos', this)">Todos</button>
-                <button class="filter-btn" onclick="filtrarStatus('pendente', this)">🔒 Bloqueadas</button>
+                <button class="filter-btn" onclick="filtrarStatus('bloqueado', this)">⛔ Bloqueadas</button>
+                <button class="filter-btn" onclick="filtrarStatus('novo', this)">⏳ Aguardando Chave</button>
                 <button class="filter-btn" onclick="filtrarStatus('ativo', this)">✅ Ativos</button>
                 <button class="filter-btn" onclick="filtrarStatus('vencido', this)">⚠️ Vencidos</button>
-                <button class="filter-btn" onclick="filtrarStatus('anual', this)">💎 Anuais</button>
             </div>
             <div class="search-box">
                 <i class='bx bx-search'></i>
@@ -154,7 +155,7 @@
                     <tr>
                         <th>Loja</th>
                         <th>Plano</th>
-                        <th>Status / Chave</th>
+                        <th>Status</th>
                         <th>Vencimento</th>
                         <th>Visitas</th>
                         <th>Ações Master</th>
@@ -194,12 +195,18 @@
                     const hoje = new Date();
                     const diasRestantes = Math.ceil((validade - hoje) / (1000 * 60 * 60 * 24));
                     
+                    // LÓGICA DE STATUS REFINADA
                     let status = 'ativo';
-                    if (c.status === 'pendente') status = 'pendente';
-                    else if (diasRestantes < 0) status = 'vencido';
+                    let isBloqueioManual = c.bloqueio_manual === true;
+
+                    if (c.status === 'pendente') {
+                        status = isBloqueioManual ? 'bloqueado' : 'novo';
+                    } else if (diasRestantes < 0) {
+                        status = 'vencido';
+                    }
 
                     total++;
-                    if (status === 'pendente' || status === 'vencido') pendentes++;
+                    if (status === 'bloqueado' || status === 'vencido' || status === 'novo') pendentes++;
                     if (status === 'ativo') {
                         if (c.plano_escolhido === 'anual') { anual++; fat += 249.90; }
                         else { mensal++; fat += 59.90; }
@@ -211,6 +218,7 @@
                         zap: c.zap || "",
                         plano: c.plano_escolhido || 'mensal',
                         status,
+                        isBloqueioManual,
                         diasRestantes,
                         validade,
                         visitas: m.visitas || 0,
@@ -237,13 +245,14 @@
         let listaFiltrada = lojasData.filter(loja => {
             const matchTexto = loja.raw.includes(termo);
             if (!matchTexto) return false;
+            
             if (filtroAtual === 'todos') return true;
             if (filtroAtual === 'anual') return loja.plano === 'anual';
             return loja.status === filtroAtual;
         });
 
         listaFiltrada.sort((a, b) => {
-            const peso = { 'pendente': 3, 'vencido': 2, 'ativo': 1 };
+            const peso = { 'bloqueado': 4, 'novo': 3, 'vencido': 2, 'ativo': 1 };
             if (peso[a.status] !== peso[b.status]) return peso[b.status] - peso[a.status];
             return b.validade - a.validade;
         });
@@ -258,17 +267,23 @@
             let rowStyle = "";
             let btnLock = "";
 
-            if (loja.status === 'pendente') {
-                badgeStatus = `<span class="status-badge st-pendente"><i class='bx bxs-lock-alt'></i> BLOQUEADO</span>`;
+            if (loja.status === 'bloqueado') {
+                badgeStatus = `<span class="status-badge st-bloq"><i class='bx bxs-lock'></i> BLOQUEIO ADM</span>`;
+                rowStyle = "background: rgba(239, 68, 68, 0.05);";
+                btnLock = `<button class="btn-mini b-unlock" onclick="alterarStatus('${loja.id}', 'desbloquear')" title="DESBLOQUEAR"><i class='bx bxs-lock-open'></i></button>`;
+            } 
+            else if (loja.status === 'novo') {
+                badgeStatus = `<span class="status-badge st-novo"><i class='bx bxs-key'></i> AGUARDANDO CHAVE</span>`;
                 rowStyle = "background: rgba(245, 158, 11, 0.05);";
-                // Botão para DESBLOQUEAR
-                btnLock = `<button class="btn-mini b-unlock" onclick="alterarStatus('${loja.id}', 'ativo')" title="DESBLOQUEAR Loja"><i class='bx bxs-lock-open'></i></button>`;
-            } else {
-                if (loja.status === 'vencido') badgeStatus = `<span class="status-badge st-vencido">VENCIDO (${Math.abs(loja.diasRestantes)}d)</span>`;
-                else badgeStatus = `<span class="status-badge st-ativo">ATIVO (${loja.diasRestantes}d)</span>`;
-                
-                // Botão para BLOQUEAR
-                btnLock = `<button class="btn-mini b-lock" onclick="alterarStatus('${loja.id}', 'pendente')" title="BLOQUEAR Loja"><i class='bx bxs-lock'></i></button>`;
+                btnLock = `<button class="btn-mini b-lock" onclick="alterarStatus('${loja.id}', 'bloquear')" title="BLOQUEAR"><i class='bx bxs-lock'></i></button>`;
+            } 
+            else if (loja.status === 'vencido') {
+                badgeStatus = `<span class="status-badge st-vencido">VENCIDO (${Math.abs(loja.diasRestantes)}d)</span>`;
+                btnLock = `<button class="btn-mini b-lock" onclick="alterarStatus('${loja.id}', 'bloquear')" title="BLOQUEAR"><i class='bx bxs-lock'></i></button>`;
+            } 
+            else {
+                badgeStatus = `<span class="status-badge st-ativo">ATIVO (${loja.diasRestantes}d)</span>`;
+                btnLock = `<button class="btn-mini b-lock" onclick="alterarStatus('${loja.id}', 'bloquear')" title="BLOQUEAR"><i class='bx bxs-lock'></i></button>`;
             }
 
             const badgePlano = loja.plano === 'anual' 
@@ -287,7 +302,7 @@
                     <td>
                         <div style="display:flex; flex-direction:column; gap:5px;">
                             ${badgeStatus}
-                            ${loja.status === 'pendente' ? `<div class="codigo-box" onclick="copiar('${loja.codigo}')" title="Copiar Chave">${loja.codigo}</div>` : ''}
+                            ${loja.status === 'novo' ? `<div class="codigo-box" onclick="copiar('${loja.codigo}')" title="Copiar Chave">${loja.codigo}</div>` : ''}
                         </div>
                     </td>
                     <td style="font-size:0.85rem; color:#ccc;">
@@ -296,7 +311,8 @@
                     <td><span class="status-badge" style="background:#334155"><i class='bx bx-show'></i> ${loja.visitas}</span></td>
                     <td>
                         <div class="actions">
-                            ${btnLock} <button class="btn-mini b-zap" onclick="window.open('${linkZap}', '_blank')" title="WhatsApp"><i class='bx bxl-whatsapp'></i></button>
+                            ${btnLock} 
+                            <button class="btn-mini b-zap" onclick="window.open('${linkZap}', '_blank')" title="WhatsApp"><i class='bx bxl-whatsapp'></i></button>
                             <button class="btn-mini b-copy" onclick="copiarLink('${loja.id}')" title="Copiar Link"><i class='bx bx-link'></i></button>
                             <button class="btn-mini btn-renovar-m" onclick="renovar('${loja.id}', 'mensal')" title="Renovar +30 Dias">+30</button>
                             <button class="btn-mini btn-renovar-a" onclick="renovar('${loja.id}', 'anual')" title="Renovar +1 Ano">+1A</button>
@@ -309,30 +325,26 @@
         });
     }
 
-    // --- FUNÇÕES DE CONTROLE ---
-    
-    // NOVO: Função para Bloquear/Desbloquear Manualmente
-    window.alterarStatus = async (id, novoStatus) => {
-        const msg = novoStatus === 'pendente' 
-            ? "⚠️ TEM CERTEZA QUE DESEJA BLOQUEAR ESTA LOJA?\nO catálogo e o painel sairão do ar imediatamente."
-            : "DESBLOQUEAR LOJA?\nO acesso será restaurado imediatamente.";
-            
-        if(confirm(msg)) {
-            await update(ref(db, `lojas/${id}/config`), { status: novoStatus });
-            // Se for desbloquear, garantimos que a validade esteja ok
-            if(novoStatus === 'ativo') {
-                // Opcional: Você pode adicionar lógica aqui para renovar a data se ela estiver vencida ao desbloquear
-            }
+    // --- AÇÕES ---
+    window.alterarStatus = async (id, acao) => {
+        if (acao === 'bloquear') {
+            if(!confirm("⚠️ BLOQUEAR LOJA POR FALTA DE PAGAMENTO?\nO cliente verá uma tela de cobrança e NÃO conseguirá entrar mesmo com a chave.")) return;
+            // Bloqueio manual REAL: Status pendente + Flag de bloqueio
+            await update(ref(db, `lojas/${id}/config`), { status: 'pendente', bloqueio_manual: true });
+        } else {
+            if(!confirm("LIBERAR ACESSO?\nO cliente voltará a acessar o painel.")) return;
+            // Remove o bloqueio manual e ativa
+            await update(ref(db, `lojas/${id}/config`), { status: 'ativo', bloqueio_manual: null });
         }
     }
 
     window.filtrarStatus = (status, btn) => {
         filtroAtual = status;
         document.querySelectorAll('.filter-btn').forEach(b => {
-            b.classList.remove('active', 'active-pendente', 'active-vencido');
+            b.classList.remove('active', 'active-bloq', 'active-vencido');
         });
         btn.classList.add('active');
-        if(status === 'pendente') btn.classList.add('active-pendente');
+        if(status === 'bloqueado') btn.classList.add('active-bloq');
         if(status === 'vencido') btn.classList.add('active-vencido');
         renderizarTabela();
     }
@@ -363,10 +375,12 @@
         let baseData = (validadeAtual > hoje) ? validadeAtual : hoje;
         baseData.setDate(baseData.getDate() + dias);
 
+        // Renovação limpa qualquer bloqueio
         await update(lojaRef, {
             status: 'ativo',
             plano_escolhido: tipo,
-            validade: baseData.toISOString()
+            validade: baseData.toISOString(),
+            bloqueio_manual: null 
         });
         alert(`Sucesso! Renovado até ${baseData.toLocaleDateString('pt-BR')}`);
     }
