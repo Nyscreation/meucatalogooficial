@@ -330,46 +330,60 @@
         await uploadBytes(storageRef, arquivoPronto);
         return await getDownloadURL(storageRef);
     }
+// ... dentro de onValue ...
+    const data = snapshot.val();
+    if (!data) { return; }
 
-    const configRef = ref(db, `lojas/${LOJA_ID}/config`);
-    onValue(configRef, (snapshot) => {
-        const data = snapshot.val();
-        if (!data) { return; }
+    // --- NOVA LÓGICA ANTI-LOOP DE ATIVAÇÃO ---
+    if (data.status === "pendente") {
 
-        // --- NOVA LÓGICA DE AUTO-ATIVAÇÃO (ATUALIZADO) ---
-        if (data.status === "pendente") {
-            const chaveDigitada = sessionStorage.getItem('chave_ativacao_temp');
-            if(chaveDigitada === data.codigo_secreto) {
-                 update(ref(db, `lojas/${LOJA_ID}/config`), { status: "ativo" });
-                 return;
-            }
-
+        // 🚨 TRAVA DE SEGURANÇA: Se o Master bloqueou manualmente, NÃO ativa sozinho!
+        if (data.bloqueio_manual === true) {
             document.body.innerHTML = `
                 <div style="height:100vh; background:#0f172a; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; padding:20px; font-family:'Inter', sans-serif;">
-                    <i class='bx bxs-lock-alt' style="font-size:5rem; color:#facc15; margin-bottom:20px;"></i>
-                    <h2 style="margin-bottom:10px;">Loja Bloqueada</h2>
-                    <p style="color:#94a3b8; text-align:center; margin-bottom:30px;">Digite a Chave de Acesso gerada na criação da loja.</p>
-                    <input type="text" id="inputChave" placeholder="Digite a chave aqui" 
-                        style="padding:15px; border-radius:10px; border:1px solid #334155; background:#1e293b; color:white; font-size:1.2rem; text-align:center; width:100%; max-width:300px; margin-bottom:20px; text-transform:uppercase;">
-                    <button onclick="validarChave('${data.codigo_secreto}')" 
-                        style="padding:15px 40px; background:#3b82f6; color:white; font-weight:bold; border:none; border-radius:10px; cursor:pointer; font-size:1rem; width:100%; max-width:300px;">
-                        LIBERAR ACESSO
-                    </button>
-                    <p style="margin-top:20px; font-size:0.8rem; color:#64748b;">Esqueceu? Peça ao suporte.</p>
+                    <i class='bx bxs-error-circle' style="font-size:5rem; color:#ef4444; margin-bottom:20px;"></i>
+                    <h2 style="margin-bottom:10px;">Acesso Suspenso</h2>
+                    <p style="color:#94a3b8; text-align:center; margin-bottom:30px;">Houve um problema com sua assinatura.</p>
+                    <a href="https://wa.me/5597984431811" style="padding:15px 40px; background:#ef4444; color:white; font-weight:bold; border:none; border-radius:10px; text-decoration:none;">
+                        FALAR COM SUPORTE
+                    </a>
                 </div>
             `;
-
-            window.validarChave = (chaveCorreta) => {
-                const entrada = document.getElementById('inputChave').value.trim().toUpperCase();
-                if (entrada === chaveCorreta) {
-                    sessionStorage.setItem('chave_ativacao_temp', entrada);
-                    location.reload(); 
-                } else {
-                    alert("❌ Chave incorreta! Verifique o código gerado.");
-                }
-            };
-            return; 
+            return; // PARA TUDO AQUI. Não roda mais nada.
         }
+
+        // Se NÃO for bloqueio manual, segue a vida normal (Auto-Ativação com Chave)
+        const chaveDigitada = sessionStorage.getItem('chave_ativacao_temp');
+        if(chaveDigitada === data.codigo_secreto) {
+             update(ref(db, `lojas/${LOJA_ID}/config`), { status: "ativo" });
+             return;
+        }
+
+        // Tela de inserir a chave (apenas para lojas novas)
+        document.body.innerHTML = `
+            <div style="height:100vh; background:#0f172a; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; padding:20px; font-family:'Inter', sans-serif;">
+                <i class='bx bxs-lock-alt' style="font-size:5rem; color:#facc15; margin-bottom:20px;"></i>
+                <h2 style="margin-bottom:10px;">Loja Bloqueada</h2>
+                <p style="color:#94a3b8; text-align:center; margin-bottom:30px;">Digite a Chave de Acesso gerada na criação da loja.</p>
+                <input type="text" id="inputChave" placeholder="Digite a chave aqui" 
+                    style="padding:15px; border-radius:10px; border:1px solid #334155; background:#1e293b; color:white; font-size:1.2rem; text-align:center; width:100%; max-width:300px; margin-bottom:20px; text-transform:uppercase;">
+                <button onclick="validarChave('${data.codigo_secreto}')" 
+                    style="padding:15px 40px; background:#3b82f6; color:white; font-weight:bold; border:none; border-radius:10px; cursor:pointer; font-size:1rem; width:100%; max-width:300px;">
+                    LIBERAR ACESSO
+                </button>
+            </div>
+        `;
+        window.validarChave = (chaveCorreta) => {
+            const entrada = document.getElementById('inputChave').value.trim().toUpperCase();
+            if (entrada === chaveCorreta) {
+                sessionStorage.setItem('chave_ativacao_temp', entrada);
+                location.reload(); 
+            } else {
+                alert("❌ Chave incorreta!");
+            }
+        };
+        return; 
+    }
         // --- FIM DA LÓGICA DE ATIVAÇÃO ---
 
         if(new Date() > (data.validade ? new Date(data.validade) : new Date())) { document.body.innerHTML = "<h1 style='color:white;text-align:center;padding:50px'>SEU PLANO VENCEU<br><br>Entre em contato para renovar.</h1>"; return; }
@@ -774,3 +788,4 @@
 </script>
 </body>
 </html>
+
