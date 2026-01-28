@@ -40,18 +40,37 @@
         }
         input:not([type="checkbox"]):focus { border-color: #60a5fa; background: rgba(0,0,0,0.5); }
         
-        .planos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px; }
+        /* NOVOS ESTILOS DOS PLANOS */
+        .planos-grid { display: flex; gap: 10px; margin-bottom: 25px; }
+        
         .plano-card { 
+            flex: 1;
             background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.05); 
-            border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s; position: relative; 
+            border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.3s; position: relative; 
+            display: flex; flex-direction: column; justify-content: center;
         }
-        .plano-card.selected { 
-            border-color: #3b82f6; background: rgba(59, 130, 246, 0.15); 
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); 
+        
+        /* Estilo quando selecionado */
+        .plano-card.selected { transform: scale(1.05); z-index: 2; }
+        
+        /* Cores específicas para cada plano */
+        #card-basico.selected { border-color: #94a3b8; background: rgba(148, 163, 184, 0.1); box-shadow: 0 0 15px rgba(148, 163, 184, 0.2); }
+        #card-premium.selected { border-color: #3b82f6; background: rgba(59, 130, 246, 0.15); box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+
+        .plano-nome { font-size: 0.8rem; color: #94a3b8; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+        #card-premium .plano-nome { color: #60a5fa; }
+        
+        .plano-preco { font-size: 1.4rem; font-weight: 800; color: white; margin: 0; }
+        .plano-detalhe { font-size: 0.75rem; background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 4px; margin-top: 8px; color: #cbd5e1; }
+        
+        .badge-best { 
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%); 
+            background: #3b82f6; color: white; font-size: 0.65rem; font-weight: bold; 
+            padding: 2px 8px; border-radius: 10px; white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4);
         }
-        .plano-nome { font-size: 0.85rem; color: #94a3b8; font-weight: bold; text-transform: uppercase; }
-        .plano-preco { font-size: 1.3rem; font-weight: 800; color: white; margin: 5px 0; }
-        .check-icon { position: absolute; top: -8px; right: -8px; background: #3b82f6; color: white; border-radius: 50%; padding: 2px; display: none; font-size: 1.2rem; }
+
+        .check-icon { position: absolute; top: 5px; right: 5px; color: #3b82f6; display: none; font-size: 1.2rem; }
         .plano-card.selected .check-icon { display: block; }
 
         button { 
@@ -67,17 +86,9 @@
         .btn-retornar { background: #10b981; margin-bottom: 10px; }
         .link-sair { color: #f87171; font-size: 0.8rem; text-decoration: underline; cursor: pointer; }
         
-        /* Estilos do Modal de Termos */
-        .modal-termos {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 9999;
-            align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;
-        }
-        .modal-box {
-            background: #1e293b; padding: 25px; border-radius: 16px; width: 100%; max-width: 500px;
-            text-align: left; color: #cbd5e1; border: 1px solid #334155;
-            max-height: 80vh; overflow-y: auto;
-        }
+        /* Modal Termos */
+        .modal-termos { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+        .modal-box { background: #1e293b; padding: 25px; border-radius: 16px; width: 100%; max-width: 500px; text-align: left; color: #cbd5e1; border: 1px solid #334155; max-height: 80vh; overflow-y: auto; }
         .modal-box h2 { color: white; margin-top: 0; }
         .modal-box p { font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px; }
 
@@ -92,8 +103,8 @@
             <p>Ao criar sua loja, você concorda que:</p>
             <p>1. <strong>Disponibilidade:</strong> O sistema opera em nuvem (online). Embora busquemos 99% de estabilidade, falhas técnicas ou manutenções podem ocorrer.</p>
             <p>2. <strong>Conteúdo:</strong> Você é o único responsável pelos produtos, preços e imagens cadastrados. É proibida a venda de itens ilegais.</p>
-            <p>3. <strong>Pagamento:</strong> O serviço é pré-pago. O não pagamento da renovação (mensal ou anual) resultará no bloqueio automático do acesso administrativo e do catálogo.</p>
-            <p>4. <strong>Dados:</strong> Seus dados de cadastro (WhatsApp e Nome) são utilizados exclusivamente para o funcionamento da plataforma e contato de suporte.</p>
+            <p>3. <strong>Pagamento:</strong> O serviço é pré-pago (Mensal). O não pagamento da renovação resultará no bloqueio automático do acesso.</p>
+            <p>4. <strong>Planos:</strong> O plano Básico limita a 80 produtos. O Premium permite até 150 produtos.</p>
             <button onclick="document.getElementById('modalTermos').style.display='none'" style="margin-top:10px;">LI E ENTENDI</button>
         </div>
     </div>
@@ -110,7 +121,7 @@
 
         <div id="formBox">
             <h1>Crie sua Loja</h1>
-            <p class="sub">Venda pelo WhatsApp em segundos.</p>
+            <p class="sub">Comece a vender online agora.</p>
             
             <div class="input-group">
                 <label>Nome do Negócio</label>
@@ -122,18 +133,21 @@
                 <input type="tel" id="zapLoja" placeholder="DDD + Número">
             </div>
 
-            <label style="margin-bottom: 10px;">Escolha seu Pacote:</label>
+            <label style="margin-bottom: 10px;">Escolha seu Plano:</label>
             <div class="planos-grid">
-                <div class="plano-card selected" onclick="selectPlan('mensal', 59.90)" id="card-mensal">
-                    <i class='bx bx-check check-icon'></i>
-                    <div class="plano-nome">Mensal</div>
+                <div class="plano-card" onclick="selectPlan('basico', 59.90)" id="card-basico">
+                    <i class='bx bx-check-circle check-icon'></i>
+                    <div class="plano-nome">Básico</div>
                     <div class="plano-preco">R$ 59,90</div>
+                    <div class="plano-detalhe">Até 80 Produtos</div>
                 </div>
 
-                <div class="plano-card" onclick="selectPlan('anual', 249.90)" id="card-anual">
-                    <i class='bx bx-check check-icon'></i>
-                    <div class="plano-nome">Anual</div>
-                    <div class="plano-preco">R$ 249,90</div>
+                <div class="plano-card selected" onclick="selectPlan('premium', 79.90)" id="card-premium">
+                    <div class="badge-best">MAIS VENDIDO</div>
+                    <i class='bx bxs-check-circle check-icon'></i>
+                    <div class="plano-nome">PREMIUM</div>
+                    <div class="plano-preco">R$ 79,90</div>
+                    <div class="plano-detalhe">Até 150 Produtos</div>
                 </div>
             </div>
 
@@ -175,7 +189,6 @@
             }
         }
 
-        // FUNÇÃO PARA ABRIR O MODAL DE TERMOS
         window.abrirTermos = (e) => {
             e.preventDefault();
             document.getElementById('modalTermos').style.display = 'flex';
@@ -207,8 +220,9 @@
             }
         }
 
-        let selectedPlan = 'mensal';
-        let selectedPrice = 59.90;
+        // --- LÓGICA DE SELEÇÃO DE PLANO (TIERED) ---
+        let selectedPlan = 'premium'; // Padrão é premium (Upsell)
+        let selectedPrice = 79.90;
 
         window.selectPlan = (plan, price) => {
             selectedPlan = plan;
@@ -226,7 +240,6 @@
         }
 
         window.contratar = async () => {
-            // VALIDAÇÃO DOS TERMOS DE USO
             const check = document.getElementById('checkTermos');
             if(!check.checked) {
                 alert("⚠️ Você precisa aceitar os Termos de Uso para criar sua loja.");
@@ -248,7 +261,7 @@
                 const snapshot = await get(lojaRef);
 
                 if(!snapshot.exists()) {
-                    // GERAÇÃO DE CÓDIGO SEGURO (Letras e Números)
+                    // GERAÇÃO DE CÓDIGO SEGURO
                     const codigoAtivacao = Math.random().toString(36).substring(2, 6).toUpperCase();
                     
                     await set(lojaRef, {
@@ -257,9 +270,9 @@
                             zap: zap, 
                             status: "pendente",
                             codigo_secreto: codigoAtivacao,
-                            plano_escolhido: selectedPlan,
+                            plano_escolhido: selectedPlan, // 'basico' ou 'premium'
                             validade: new Date().toISOString(),
-                            aceitou_termos: new Date().toISOString() // REGISTRA O ACEITE
+                            aceitou_termos: new Date().toISOString()
                         },
                         produtos: {}
                     });
@@ -267,10 +280,10 @@
                     localStorage.setItem('minha_loja_id', slug);
 
                     const seuNumero = "5597984431811"; 
-                    const msg = `Olá! Quero ativar a loja *${nome}* no plano *${selectedPlan.toUpperCase()}*. Li e aceito os termos. Aguardo a chave.`;
+                    // Mensagem ajustada para o novo modelo
+                    const msg = `Olá! Quero ativar a loja *${nome}* no plano *${selectedPlan.toUpperCase()}* (R$ ${selectedPrice}). Li e aceito os termos. Aguardo a chave.`;
                     window.open(`https://wa.me/${seuNumero}?text=${encodeURIComponent(msg)}`, '_blank');
                     
-                    // Redireciona para o admin (que vai mostrar a tela de bloqueio)
                     setTimeout(() => {
                         window.location.href = `admin.html?id=${slug}`;
                     }, 1000);
