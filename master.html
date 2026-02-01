@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel GOD MODE - V5.1 (Controle de Testes)</title>
+    <title>Painel GOD MODE - V5.2 (Fixed)</title>
     
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -109,7 +109,7 @@
     <div id="loginScreen">
         <div class="login-box">
             <i class='bx bxs-shield-plus' style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"></i>
-            <h2>GOD MODE V5.1</h2>
+            <h2>GOD MODE V5.2</h2>
             <input type="password" id="senhaInput" placeholder="Senha Mestra">
             <button onclick="verificarSenha()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">ACESSAR PAINEL</button>
         </div>
@@ -118,7 +118,7 @@
     <div id="painel" style="display:none">
         
         <div class="header">
-            <h1><i class='bx bxs-dashboard'></i> Painel Master <span class="badge-god">V 5.1</span></h1>
+            <h1><i class='bx bxs-dashboard'></i> Painel Master <span class="badge-god">V 5.2</span></h1>
             <button onclick="location.reload()" style="background:none; border:1px solid #334155; color:#f87171; padding:8px 15px; border-radius:8px; cursor:pointer;">Sair</button>
         </div>
 
@@ -223,12 +223,13 @@
                     
                     let status = 'ativo';
                     let isBloqueioManual = c.bloqueio_manual === true;
+                    // Verifica se está em modo teste
                     let isTeste = c.em_teste === true; 
 
                     if (c.status === 'pendente') {
                         status = isBloqueioManual ? 'bloqueado' : 'novo';
                     } else if (diasRestantes < 0) {
-                        status = 'vencido';
+                        status = 'vencido'; // Vencido tem prioridade sobre teste visualmente
                     } else if (isTeste) {
                         status = 'teste';
                     } else if (isBloqueioManual) {
@@ -243,7 +244,8 @@
                     if (status === 'bloqueado' || status === 'vencido' || status === 'novo') pendentes++;
                     if (status === 'teste') testes++;
                     
-                    if (status === 'ativo' || status === 'vencido') {
+                    // CONTABILIDADE (MRR) E DÍZIMO
+                    if (status === 'ativo' || (status === 'vencido' && !isTeste)) {
                         if (plano === 'premium') { premium++; fat += 79.90; }
                         else { basico++; fat += 59.90; }
                     }
@@ -259,7 +261,8 @@
                         validade,
                         visitas: m.visitas || 0,
                         codigo: c.codigo_secreto || "---",
-                        raw: (c.nome + id + c.zap).toLowerCase()
+                        raw: (c.nome + id + c.zap).toLowerCase(),
+                        isTeste: isTeste // Guardamos a info crua também
                     });
                 });
             }
@@ -310,7 +313,12 @@
             let badgeStatus = "";
             let rowStyle = "";
             let btnLock = "";
-            let btnKillTest = ""; // Botão Extra para Testes
+            let btnKillTest = ""; 
+
+            // Se for teste (mesmo vencido ou ativo), o botão de encerrar deve estar disponível se quisermos forçar
+            if (loja.isTeste && loja.status !== 'vencido') {
+                 btnKillTest = `<button class="btn-mini b-kill" onclick="encerrarTeste('${loja.id}')" title="ENCERRAR TESTE AGORA (Forçar Vencimento)"><i class='bx bx-time-five'></i></button>`;
+            }
 
             if (loja.status === 'bloqueado') {
                 badgeStatus = `<span class="status-badge st-bloq"><i class='bx bxs-lock'></i> BLOQ. ADM</span>`;
@@ -325,10 +333,7 @@
             else if (loja.status === 'teste') {
                 badgeStatus = `<span class="status-badge st-teste"><i class='bx bx-timer'></i> TESTE (${loja.diasRestantes}d)</span>`;
                 rowStyle = "background: rgba(59, 130, 246, 0.05); border-left: 3px solid #60a5fa;";
-                // Bloqueio Normal
                 btnLock = `<button class="btn-mini b-lock" onclick="alterarStatus('${loja.id}', 'bloquear')" title="BLOQUEAR"><i class='bx bxs-lock'></i></button>`;
-                // NOVO CADEADO DE TESTE
-                btnKillTest = `<button class="btn-mini b-kill" onclick="encerrarTeste('${loja.id}')" title="ENCERRAR TESTE AGORA (Forçar Vencimento)"><i class='bx bxs-x-circle'></i></button>`;
             }
             else if (loja.status === 'vencido') {
                 badgeStatus = `<span class="status-badge st-vencido">VENCIDO (${Math.abs(loja.diasRestantes)}d)</span>`;
@@ -386,15 +391,15 @@
 
     // --- NOVA FUNÇÃO: MATAR TESTE ---
     window.encerrarTeste = async (id) => {
-        if(!confirm(`⚠️ ENCERRAR PERÍODO DE TESTE?\n\nA loja ${id} ficará VENCIDA imediatamente e o cliente perderá o acesso até pagar.`)) return;
+        if(!confirm(`⚠️ ENCERRAR PERÍODO DE TESTE?\n\nA loja ${id} ficará VENCIDA imediatamente e o cliente verá o aviso de pagamento.`)) return;
 
         const ontem = new Date();
-        ontem.setDate(ontem.getDate() - 1); // Define data para ontem
+        ontem.setDate(ontem.getDate() - 1); 
 
+        // Atualiza para vencido e mantém a flag de teste para sabermos que era um teste que venceu
+        // (Ou removemos se quisermos que pareça inadimplente normal. Aqui vou manter a flag mas forçar data)
         await update(ref(db, `lojas/${id}/config`), {
-            status: 'vencido', // Força status visual de vencido
-            validade: ontem.toISOString(), // Expira a validade
-            em_teste: null // Remove a marcação de teste
+            validade: ontem.toISOString() 
         });
         alert("Teste encerrado! Loja marcada como Vencida.");
     }
