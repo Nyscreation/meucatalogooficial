@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel GOD MODE - V4.0 (SaaS)</title>
+    <title>Painel GOD MODE - V5.0 (Gestão & Dízimo)</title>
     
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -12,6 +12,7 @@
         :root {
             --bg: #0f172a; --surface: #1e293b; --primary: #3b82f6; --text: #f1f5f9; --text-muted: #94a3b8;
             --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --premium: #a855f7;
+            --gold: #fbbf24; --teste: #60a5fa;
         }
 
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; min-height: 100vh; }
@@ -28,10 +29,17 @@
 
         /* STATS */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .stat-card { background: var(--surface); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; }
-        .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
+        .stat-card { background: var(--surface); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
         .stat-value { font-size: 1.8rem; font-weight: 800; color: white; }
         .stat-icon { font-size: 1.5rem; color: var(--primary); position: absolute; top: 20px; right: 20px; opacity: 0.5; }
+        .stat-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; }
+
+        /* CARD ESPECIAL DÍZIMO */
+        .card-dizimo { border: 1px solid rgba(251, 191, 36, 0.3); background: rgba(251, 191, 36, 0.05); }
+        .card-dizimo .stat-value { color: var(--gold); }
+        .card-dizimo .stat-icon { color: var(--gold); opacity: 0.8; }
+        .card-dizimo .stat-label { color: var(--gold); }
 
         /* TOOLBAR */
         .toolbar { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; background: var(--surface); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
@@ -40,6 +48,7 @@
         .filter-btn:hover, .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
         .filter-btn.active-bloq { background: #b91c1c; color: white; border-color: #b91c1c; }
         .filter-btn.active-vencido { background: var(--danger); color: white; border-color: var(--danger); }
+        .filter-btn.active-teste { background: var(--teste); color: white; border-color: var(--teste); }
 
         .search-box { position: relative; width: 100%; }
         .search-box input { width: 100%; padding: 12px 12px 12px 40px; background: var(--bg); border: 1px solid #334155; color: white; border-radius: 8px; outline: none; box-sizing: border-box; }
@@ -53,7 +62,6 @@
         tr:hover { background: rgba(255,255,255,0.02); }
 
         .loja-nome { font-weight: bold; font-size: 0.95rem; color: white; display: block; }
-        .loja-id { font-family: monospace; color: var(--primary); font-size: 0.8rem; }
         
         /* BADGES STATUS */
         .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
@@ -61,8 +69,10 @@
         .st-bloq { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444; }
         .st-ativo { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .st-vencido { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        /* Badge Teste */
+        .st-teste { background: rgba(59, 130, 246, 0.1); color: var(--teste); border: 1px dashed var(--teste); }
 
-        /* BADGES PLANOS (NOVO) */
+        /* BADGES PLANOS */
         .plano-badge { padding: 3px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; display: inline-block; min-width: 70px; text-align: center; }
         .pl-basico { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
         .pl-premium { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); box-shadow: 0 0 10px rgba(168, 85, 247, 0.15); }
@@ -88,7 +98,6 @@
             background: rgba(250, 204, 21, 0.1); padding: 5px 10px; border-radius: 6px;
             border: 1px dashed #facc15; cursor: pointer; text-align: center;
         }
-        .codigo-box:hover { background: #facc15; color: black; }
     </style>
 </head>
 <body>
@@ -96,7 +105,7 @@
     <div id="loginScreen">
         <div class="login-box">
             <i class='bx bxs-shield-plus' style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"></i>
-            <h2>GOD MODE V4.0</h2>
+            <h2>GOD MODE V5.0</h2>
             <input type="password" id="senhaInput" placeholder="Senha Mestra">
             <button onclick="verificarSenha()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">ACESSAR PAINEL</button>
         </div>
@@ -105,21 +114,37 @@
     <div id="painel" style="display:none">
         
         <div class="header">
-            <h1><i class='bx bxs-dashboard'></i> Painel Master <span class="badge-god">V 4.0</span></h1>
+            <h1><i class='bx bxs-dashboard'></i> Painel Master <span class="badge-god">V 5.0</span></h1>
             <button onclick="location.reload()" style="background:none; border:1px solid #334155; color:#f87171; padding:8px 15px; border-radius:8px; cursor:pointer;">Sair</button>
         </div>
 
         <div class="stats-grid">
+            <div class="stat-card card-dizimo">
+                <i class='bx bxs-church stat-icon'></i>
+                <div class="stat-label">Separar para Dízimo (10%)</div>
+                <div class="stat-value" id="stDizimo">R$ 0,00</div>
+                <div class="stat-sub">Calculado sobre o recebido</div>
+            </div>
+
+            <div class="stat-card">
+                <i class='bx bxs-wallet stat-icon' style="color: #10b981;"></i>
+                <div class="stat-label">Receita (Pagantes)</div>
+                <div class="stat-value" id="stFat">R$ 0,00</div>
+                <div class="stat-sub">Exclui Períodos Grátis</div>
+            </div>
+
             <div class="stat-card">
                 <i class='bx bxs-store stat-icon'></i>
                 <div class="stat-label">Total de Clientes</div>
-                <div class="stat-value" id="stTotal">0</div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                    <div class="stat-value" id="stTotal">0</div>
+                    <div style="font-size:0.8rem; text-align:right;">
+                        <div style="color:var(--teste)">Testes: <b id="stTesteCount">0</b></div>
+                        <div style="color:#ef4444">Inad.: <b id="stPend">0</b></div>
+                    </div>
+                </div>
             </div>
-            <div class="stat-card">
-                <i class='bx bxs-wallet stat-icon' style="color: #10b981;"></i>
-                <div class="stat-label">Receita Recorrente (MRR)</div>
-                <div class="stat-value" id="stFat">R$ 0,00</div>
-            </div>
+
             <div class="stat-card">
                 <i class='bx bxs-layer stat-icon' style="color: #a855f7;"></i>
                 <div class="stat-label">Mix de Planos</div>
@@ -128,19 +153,14 @@
                     <span style="color:#c084fc">Premium: <b id="stPremium">0</b></span>
                 </div>
             </div>
-            <div class="stat-card">
-                <i class='bx bxs-error-circle stat-icon' style="color: #ef4444;"></i>
-                <div class="stat-label">Inadimplência</div>
-                <div class="stat-value" id="stPend" style="color: #fca5a5;">0</div>
-            </div>
         </div>
 
         <div class="toolbar">
             <div class="filter-group">
                 <button class="filter-btn active" onclick="filtrarStatus('todos', this)">Todos</button>
-                <button class="filter-btn" onclick="filtrarStatus('bloqueado', this)">⛔ Bloqueadas</button>
-                <button class="filter-btn" onclick="filtrarStatus('novo', this)">⏳ Novos</button>
+                <button class="filter-btn" onclick="filtrarStatus('teste', this)">⏱️ Em Teste</button>
                 <button class="filter-btn" onclick="filtrarStatus('ativo', this)">✅ Ativos</button>
+                <button class="filter-btn" onclick="filtrarStatus('bloqueado', this)">⛔ Bloqueadas</button>
                 <button class="filter-btn" onclick="filtrarStatus('vencido', this)">⚠️ Vencidos</button>
                 <button class="filter-btn" onclick="filtrarStatus('premium', this)">💎 Premium</button>
             </div>
@@ -186,6 +206,7 @@
             const dados = snapshot.val();
             lojasData = [];
             let total = 0, basico = 0, premium = 0, pendentes = 0, fat = 0;
+            let testes = 0;
 
             if(dados) {
                 Object.entries(dados).forEach(([id, loja]) => {
@@ -196,27 +217,33 @@
                     const hoje = new Date();
                     const diasRestantes = Math.ceil((validade - hoje) / (1000 * 60 * 60 * 24));
                     
-                    // STATUS
+                    // STATUS LÓGICA
                     let status = 'ativo';
                     let isBloqueioManual = c.bloqueio_manual === true;
+                    let isTeste = c.em_teste === true; // Lógica do período gratuito
 
                     if (c.status === 'pendente') {
                         status = isBloqueioManual ? 'bloqueado' : 'novo';
                     } else if (diasRestantes < 0) {
-                        status = 'vencido';
+                        status = 'vencido'; // Se venceu, sai do teste e vira vencido
+                    } else if (isTeste) {
+                        status = 'teste';
+                    } else if (isBloqueioManual) {
+                        status = 'bloqueado';
                     }
 
-                    // PLANO (Tratamento legado)
+                    // PLANO
                     let plano = c.plano_escolhido;
-                    if(plano === 'mensal') plano = 'basico'; // Converte legado
-                    if(plano === 'anual') plano = 'premium'; // Converte legado
-                    if(!plano) plano = 'basico';
+                    if(!plano || plano === 'mensal') plano = 'basico'; 
+                    if(plano === 'anual') plano = 'premium';
 
                     total++;
                     if (status === 'bloqueado' || status === 'vencido' || status === 'novo') pendentes++;
+                    if (status === 'teste') testes++;
                     
-                    // Contabiliza Financeiro se estiver ativo/vencido (cliente da base)
-                    if (status !== 'novo') {
+                    // CONTABILIDADE (MRR) E DÍZIMO
+                    // Só conta como dinheiro se NÃO for teste, NÃO for novo e NÃO for bloqueado adm
+                    if (status === 'ativo' || status === 'vencido') {
                         if (plano === 'premium') { premium++; fat += 79.90; }
                         else { basico++; fat += 59.90; }
                     }
@@ -237,11 +264,18 @@
                 });
             }
 
+            // CALCULA DÍZIMO (10%)
+            let dizimo = fat * 0.10;
+
             document.getElementById('stTotal').innerText = total;
             document.getElementById('stFat').innerText = fat.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('stDizimo').innerText = dizimo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            
             document.getElementById('stBasico').innerText = basico;
             document.getElementById('stPremium').innerText = premium;
             document.getElementById('stPend').innerText = pendentes;
+            document.getElementById('stTesteCount').innerText = testes;
+            
             renderizarTabela();
         });
     }
@@ -257,12 +291,13 @@
             
             if (filtroAtual === 'todos') return true;
             if (filtroAtual === 'premium') return loja.plano === 'premium';
+            if (filtroAtual === 'ativo') return (loja.status === 'ativo' || loja.status === 'teste'); // Ativos mostra testes tbm
             return loja.status === filtroAtual;
         });
 
         // Ordenação por Prioridade
         listaFiltrada.sort((a, b) => {
-            const peso = { 'bloqueado': 5, 'novo': 4, 'vencido': 3, 'ativo': 1 };
+            const peso = { 'novo': 6, 'teste': 5, 'vencido': 4, 'bloqueado': 3, 'ativo': 1 };
             if (peso[a.status] !== peso[b.status]) return peso[b.status] - peso[a.status];
             return b.validade - a.validade;
         });
@@ -287,6 +322,12 @@
                 rowStyle = "background: rgba(245, 158, 11, 0.05);";
                 btnLock = `<button class="btn-mini b-lock" onclick="alterarStatus('${loja.id}', 'bloquear')" title="BLOQUEAR"><i class='bx bxs-lock'></i></button>`;
             } 
+            else if (loja.status === 'teste') {
+                // VISUAL DO TESTE GRÁTIS
+                badgeStatus = `<span class="status-badge st-teste"><i class='bx bx-timer'></i> TESTE (${loja.diasRestantes}d)</span>`;
+                rowStyle = "background: rgba(59, 130, 246, 0.05); border-left: 3px solid #60a5fa;";
+                btnLock = `<button class="btn-mini b-lock" onclick="alterarStatus('${loja.id}', 'bloquear')" title="BLOQUEAR"><i class='bx bxs-lock'></i></button>`;
+            }
             else if (loja.status === 'vencido') {
                 badgeStatus = `<span class="status-badge st-vencido">VENCIDO (${Math.abs(loja.diasRestantes)}d)</span>`;
                 btnLock = `<button class="btn-mini b-lock" onclick="alterarStatus('${loja.id}', 'bloquear')" title="BLOQUEAR"><i class='bx bxs-lock'></i></button>`;
@@ -323,8 +364,8 @@
                     <td><span class="status-badge" style="background:#334155"><i class='bx bx-show'></i> ${loja.visitas}</span></td>
                     <td>
                         <div class="actions">
-                            <button class="btn-mini btn-renovar btn-ren-bas" onclick="renovar('${loja.id}', 'basico')" title="Renovar/Mudar para Básico">BÁSICO</button>
-                            <button class="btn-mini btn-renovar btn-ren-pre" onclick="renovar('${loja.id}', 'premium')" title="Renovar/Mudar para Premium">PREMIUM</button>
+                            <button class="btn-mini btn-renovar btn-ren-bas" onclick="renovar('${loja.id}', 'basico')" title="Renovar Básico (Remove Teste)">BÁSICO</button>
+                            <button class="btn-mini btn-renovar btn-ren-pre" onclick="renovar('${loja.id}', 'premium')" title="Renovar Premium (Remove Teste)">PREMIUM</button>
                             
                             <div style="width:1px; background:#334155; margin:0 5px;"></div>
 
@@ -354,11 +395,12 @@
     window.filtrarStatus = (status, btn) => {
         filtroAtual = status;
         document.querySelectorAll('.filter-btn').forEach(b => {
-            b.classList.remove('active', 'active-bloq', 'active-vencido');
+            b.classList.remove('active', 'active-bloq', 'active-vencido', 'active-teste');
         });
         btn.classList.add('active');
         if(status === 'bloqueado') btn.classList.add('active-bloq');
         if(status === 'vencido') btn.classList.add('active-vencido');
+        if(status === 'teste') btn.classList.add('active-teste');
         renderizarTabela();
     }
 
@@ -366,7 +408,7 @@
 
     window.copiar = (txt) => {
         navigator.clipboard.writeText(txt);
-        alert("Copiado!");
+        // alert("Copiado!"); // Opcional
     }
 
     window.copiarLink = (id) => {
@@ -379,7 +421,7 @@
         const valor = tipo === 'premium' ? "R$ 79,90" : "R$ 59,90";
         const nomePlano = tipo.toUpperCase();
         
-        if(!confirm(`CONFIRMA RENOVAÇÃO / MUDANÇA?\n\nLoja: ${id}\nNovo Plano: ${nomePlano}\nValor: ${valor}\nAdicionar: +30 Dias`)) return;
+        if(!confirm(`CONFIRMA EFETIVAÇÃO/PAGAMENTO?\n\nLoja: ${id}\nNovo Plano: ${nomePlano}\nValor: ${valor}\n\nIsso remove o modo 'Teste' e adiciona 30 dias.`)) return;
 
         const lojaRef = ref(db, `lojas/${id}/config`);
         const snap = await get(lojaRef);
@@ -387,17 +429,18 @@
 
         let validadeAtual = new Date(data.validade || 0);
         const hoje = new Date();
-        // Se já venceu, renova a partir de hoje. Se não, soma na validade atual.
+        // Se já venceu ou é hoje, renova a partir de hoje. Se ainda tem dias (teste válido), soma no final.
         let baseData = (validadeAtual > hoje) ? validadeAtual : hoje;
         baseData.setDate(baseData.getDate() + 30);
 
         await update(lojaRef, {
             status: 'ativo',
-            plano_escolhido: tipo, // Atualiza o plano no banco
+            em_teste: null, // IMPORTANTE: Remove a flag de teste para começar a contar no Dízimo
+            plano_escolhido: tipo, 
             validade: baseData.toISOString(),
             bloqueio_manual: null 
         });
-        alert(`Sucesso! Loja agora é ${nomePlano} e vence em ${baseData.toLocaleDateString('pt-BR')}`);
+        alert(`Sucesso! Loja agora contribui para a receita.`);
     }
 
     window.apagar = async (id) => {
