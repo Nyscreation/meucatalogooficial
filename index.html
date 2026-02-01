@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Criar Loja Grátis</title>
+    <title>Criar Loja</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
@@ -28,6 +28,29 @@
         h1 { font-size: 2rem; margin: 0 0 10px 0; background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         p.sub { color: #94a3b8; margin-bottom: 30px; font-size: 0.9rem; }
         
+        /* NOVO: Banner de Período Gratuito */
+        .free-trial-banner {
+            background: linear-gradient(135deg, #10b981, #059669);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+        .free-trial-banner h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.2rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .free-trial-banner p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #d1fae5;
+        }
+        
         .input-group { margin-bottom: 15px; text-align: left; }
         label { font-size: 0.8rem; font-weight: 600; color: #cbd5e1; margin-left: 5px; display: block; margin-bottom: 5px; }
         
@@ -40,7 +63,7 @@
         }
         input:not([type="checkbox"]):focus { border-color: #60a5fa; background: rgba(0,0,0,0.5); }
         
-        /* NOVOS ESTILOS DOS PLANOS */
+        /* NOVOS ESTILOS DOS PLANOS - ATUALIZADO PARA GRATUITO */
         .planos-grid { display: flex; gap: 10px; margin-bottom: 25px; }
         
         .plano-card { 
@@ -60,7 +83,12 @@
         .plano-nome { font-size: 0.8rem; color: #94a3b8; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
         #card-premium .plano-nome { color: #60a5fa; }
         
+        /* NOVO: Estilo do preço gratuito */
         .plano-preco { font-size: 1.4rem; font-weight: 800; color: white; margin: 0; }
+        .plano-preco-gratis { font-size: 1.2rem; font-weight: 800; color: #10b981; margin: 0; }
+        .plano-preco-apos { font-size: 0.7rem; color: #94a3b8; margin-top: 3px; text-decoration: line-through; opacity: 0.7; }
+        .plano-preco-normal { font-size: 0.75rem; color: #cbd5e1; margin-top: 3px; }
+        
         .plano-detalhe { font-size: 0.75rem; background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 4px; margin-top: 8px; color: #cbd5e1; }
         
         .badge-best { 
@@ -99,11 +127,14 @@
 
     <div id="modalTermos" class="modal-termos">
         <div class="modal-box">
-            <h2>📜 Termos de Uso (Teste Grátis)</h2>
+            <h2>📜 Termos de Uso</h2>
             <p>Ao criar sua loja, você concorda que:</p>
-            <p>1. <strong>Período de Teste:</strong> Você terá 15 dias de acesso gratuito completo. Após esse período, será necessário efetuar o pagamento para continuar.</p>
-            <p>2. <strong>Conteúdo:</strong> Você é o único responsável pelos produtos e imagens cadastrados.</p>
-            <p>3. <strong>Bloqueio:</strong> Caso a renovação não ocorra após os 15 dias, a loja será suspensa automaticamente.</p>
+            <p>1. <strong>Período Gratuito:</strong> Você terá 15 dias de teste GRATUITO com todas as funcionalidades do plano escolhido.</p>
+            <p>2. <strong>Após o período gratuito:</strong> Se desejar continuar usando o sistema, será necessário fazer o pagamento mensal conforme o plano escolhido (Básico: R$ 59,90 | Premium: R$ 79,90).</p>
+            <p>3. <strong>Disponibilidade:</strong> O sistema opera em nuvem (online). Embora busquemos 99% de estabilidade, falhas técnicas ou manutenções podem ocorrer.</p>
+            <p>4. <strong>Conteúdo:</strong> Você é o único responsável pelos produtos, preços e imagens cadastrados. É proibida a venda de itens ilegais.</p>
+            <p>5. <strong>Planos:</strong> O plano Básico limita a 80 produtos. O Premium permite até 150 produtos.</p>
+            <p>6. <strong>Cancelamento:</strong> Você pode cancelar a qualquer momento. Após o vencimento sem pagamento, a loja será bloqueada automaticamente.</p>
             <button onclick="document.getElementById('modalTermos').style.display='none'" style="margin-top:10px;">LI E ENTENDI</button>
         </div>
     </div>
@@ -120,7 +151,13 @@
 
         <div id="formBox">
             <h1>Crie sua Loja</h1>
-            <p class="sub">Teste grátis por 15 dias. Sem compromisso.</p>
+            <p class="sub">Comece a vender online agora.</p>
+            
+            <!-- NOVO: Banner de Período Gratuito -->
+            <div class="free-trial-banner">
+                <h3><i class='bx bxs-gift'></i> 15 DIAS GRÁTIS!</h3>
+                <p>Teste completo sem compromisso</p>
+            </div>
             
             <div class="input-group">
                 <label>Nome do Negócio</label>
@@ -132,12 +169,14 @@
                 <input type="tel" id="zapLoja" placeholder="DDD + Número">
             </div>
 
-            <label style="margin-bottom: 10px;">Plano para Teste:</label>
+            <label style="margin-bottom: 10px;">Escolha seu Plano:</label>
             <div class="planos-grid">
                 <div class="plano-card" onclick="selectPlan('basico', 59.90)" id="card-basico">
                     <i class='bx bx-check-circle check-icon'></i>
                     <div class="plano-nome">Básico</div>
-                    <div class="plano-preco">R$ 59,90</div>
+                    <div class="plano-preco-gratis">GRÁTIS</div>
+                    <div class="plano-preco-normal">por 15 dias</div>
+                    <div class="plano-preco-apos">Depois R$ 59,90/mês</div>
                     <div class="plano-detalhe">Até 80 Produtos</div>
                 </div>
 
@@ -145,7 +184,9 @@
                     <div class="badge-best">MAIS VENDIDO</div>
                     <i class='bx bxs-check-circle check-icon'></i>
                     <div class="plano-nome">PREMIUM</div>
-                    <div class="plano-preco">R$ 79,90</div>
+                    <div class="plano-preco-gratis">GRÁTIS</div>
+                    <div class="plano-preco-normal">por 15 dias</div>
+                    <div class="plano-preco-apos">Depois R$ 79,90/mês</div>
                     <div class="plano-detalhe">Até 150 Produtos</div>
                 </div>
             </div>
@@ -153,7 +194,7 @@
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; text-align: left;">
                 <input type="checkbox" id="checkTermos" style="width: 20px; height: 20px; cursor: pointer;">
                 <span style="font-size: 0.85rem; color: #cbd5e1;">
-                    Aceito os <a href="#" onclick="abrirTermos(event)" style="color: #60a5fa; text-decoration: underline;">Termos de Uso</a>
+                    Li e aceito os <a href="#" onclick="abrirTermos(event)" style="color: #60a5fa; text-decoration: underline;">Termos de Uso</a>
                 </span>
             </div>
 
@@ -220,7 +261,7 @@
         }
 
         // --- LÓGICA DE SELEÇÃO DE PLANO ---
-        let selectedPlan = 'premium'; 
+        let selectedPlan = 'premium'; // Padrão é premium (Upsell)
         let selectedPrice = 79.90;
 
         window.selectPlan = (plan, price) => {
@@ -238,13 +279,10 @@
                 .replace(/\-\-+/g, '-');
         }
 
-        // ================================================
-        // 🔥 NOVA FUNÇÃO: CRIAR LOJA COM 15 DIAS GRÁTIS
-        // ================================================
         window.contratar = async () => {
             const check = document.getElementById('checkTermos');
             if(!check.checked) {
-                alert("⚠️ Você precisa aceitar os Termos de Uso.");
+                alert("⚠️ Você precisa aceitar os Termos de Uso para criar sua loja.");
                 return;
             }
 
@@ -255,7 +293,7 @@
             if(!nome || !zap) return alert("Preencha todos os campos!");
             
             btn.disabled = true;
-            btn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Configurando...";
+            btn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Criando...";
 
             try {
                 const slug = criarSlug(nome);
@@ -263,46 +301,44 @@
                 const snapshot = await get(lojaRef);
 
                 if(!snapshot.exists()) {
-                    // CALCULA DATA DE VENCIMENTO (HOJE + 15 DIAS)
-                    const hoje = new Date();
-                    const dataVencimento = new Date(hoje);
-                    dataVencimento.setDate(hoje.getDate() + 15);
-
-                    // Cria a loja já ATIVA e em MODO TESTE
+                    // PERÍODO GRATUITO: 15 dias a partir de hoje
+                    const dataInicio = new Date();
+                    const dataValidade = new Date();
+                    dataValidade.setDate(dataValidade.getDate() + 15); // 15 dias grátis
+                    
                     await set(lojaRef, {
                         config: { 
                             nome: nome, 
                             zap: zap, 
-                            status: "ativo",     // Já libera acesso
-                            em_teste: true,      // Marca visualmente no Admin Master
-                            plano_escolhido: selectedPlan, 
-                            validade: dataVencimento.toISOString(), // Expira em 15 dias
+                            status: "ativo", // Já começa ativo (período gratuito)
+                            plano_escolhido: selectedPlan, // 'basico' ou 'premium'
+                            periodo_gratuito: true, // Flag de período gratuito
+                            data_criacao: dataInicio.toISOString(),
+                            validade: dataValidade.toISOString(), // 15 dias de hoje
                             aceitou_termos: new Date().toISOString()
                         },
-                        produtos: {}
+                        produtos: {},
+                        metricas: {
+                            visitas: 0
+                        }
                     });
                     
                     localStorage.setItem('minha_loja_id', slug);
 
-                    // Opcional: Notificar seu WhatsApp (sem travar o usuário)
-                    // const seuNumero = "5597984431811"; 
-                    // const msg = `Novo LEAD: Loja *${nome}* criada em teste grátis (${selectedPlan}).`;
-                    // window.open(`https://wa.me/${seuNumero}?text=${encodeURIComponent(msg)}`, '_blank');
+                    // Mensagem de sucesso
+                    alert(`🎉 Loja criada com sucesso!\n\n✅ Você tem 15 dias GRÁTIS para testar.\n✅ Seu catálogo já está no ar!`);
                     
-                    setTimeout(() => {
-                        alert("🎉 Loja criada! Aproveite seus 15 dias grátis.");
-                        window.location.href = `admin.html?id=${slug}`;
-                    }, 1000);
-
+                    // Redireciona para o painel
+                    window.location.href = `admin.html?id=${slug}`;
                 } else {
                     alert("Essa loja já existe! Se for sua, clique em 'Entrar'.");
                     btn.disabled = false;
-                    btn.innerHTML = "Tentar Outro Nome";
+                    btn.innerHTML = "<i class='bx bx-rocket'></i> COMEÇAR TESTE GRÁTIS";
                 }
             } catch (e) {
                 alert("Erro: " + e.message);
                 btn.disabled = false;
-                btn.innerText = "TENTAR NOVAMENTE";
+                btn.innerHTML = "<i class='bx bx-rocket'></i> COMEÇAR TESTE GRÁTIS";
             }
         }
     </script>
