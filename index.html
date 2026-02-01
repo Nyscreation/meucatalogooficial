@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Criar Loja</title>
+    <title>Criar Loja Grátis</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
@@ -99,12 +99,11 @@
 
     <div id="modalTermos" class="modal-termos">
         <div class="modal-box">
-            <h2>📜 Termos de Uso</h2>
+            <h2>📜 Termos de Uso (Teste Grátis)</h2>
             <p>Ao criar sua loja, você concorda que:</p>
-            <p>1. <strong>Disponibilidade:</strong> O sistema opera em nuvem (online). Embora busquemos 99% de estabilidade, falhas técnicas ou manutenções podem ocorrer.</p>
-            <p>2. <strong>Conteúdo:</strong> Você é o único responsável pelos produtos, preços e imagens cadastrados. É proibida a venda de itens ilegais.</p>
-            <p>3. <strong>Pagamento:</strong> O serviço é pré-pago (Mensal). O não pagamento da renovação resultará no bloqueio automático do acesso.</p>
-            <p>4. <strong>Planos:</strong> O plano Básico limita a 80 produtos. O Premium permite até 150 produtos.</p>
+            <p>1. <strong>Período de Teste:</strong> Você terá 15 dias de acesso gratuito completo. Após esse período, será necessário efetuar o pagamento para continuar.</p>
+            <p>2. <strong>Conteúdo:</strong> Você é o único responsável pelos produtos e imagens cadastrados.</p>
+            <p>3. <strong>Bloqueio:</strong> Caso a renovação não ocorra após os 15 dias, a loja será suspensa automaticamente.</p>
             <button onclick="document.getElementById('modalTermos').style.display='none'" style="margin-top:10px;">LI E ENTENDI</button>
         </div>
     </div>
@@ -121,7 +120,7 @@
 
         <div id="formBox">
             <h1>Crie sua Loja</h1>
-            <p class="sub">Comece a vender online agora.</p>
+            <p class="sub">Teste grátis por 15 dias. Sem compromisso.</p>
             
             <div class="input-group">
                 <label>Nome do Negócio</label>
@@ -133,7 +132,7 @@
                 <input type="tel" id="zapLoja" placeholder="DDD + Número">
             </div>
 
-            <label style="margin-bottom: 10px;">Escolha seu Plano:</label>
+            <label style="margin-bottom: 10px;">Plano para Teste:</label>
             <div class="planos-grid">
                 <div class="plano-card" onclick="selectPlan('basico', 59.90)" id="card-basico">
                     <i class='bx bx-check-circle check-icon'></i>
@@ -154,12 +153,12 @@
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; text-align: left;">
                 <input type="checkbox" id="checkTermos" style="width: 20px; height: 20px; cursor: pointer;">
                 <span style="font-size: 0.85rem; color: #cbd5e1;">
-                    Li e aceito os <a href="#" onclick="abrirTermos(event)" style="color: #60a5fa; text-decoration: underline;">Termos de Uso</a>
+                    Aceito os <a href="#" onclick="abrirTermos(event)" style="color: #60a5fa; text-decoration: underline;">Termos de Uso</a>
                 </span>
             </div>
 
             <button onclick="contratar()" id="btnCriar">
-                <i class='bx bxl-whatsapp' style="font-size: 1.4rem;"></i> CRIAR AGORA
+                <i class='bx bx-rocket' style="font-size: 1.4rem;"></i> COMEÇAR TESTE GRÁTIS
             </button>
             
             <div style="margin-top: 20px; font-size: 0.8rem; color: #64748b;">
@@ -220,8 +219,8 @@
             }
         }
 
-        // --- LÓGICA DE SELEÇÃO DE PLANO (TIERED) ---
-        let selectedPlan = 'premium'; // Padrão é premium (Upsell)
+        // --- LÓGICA DE SELEÇÃO DE PLANO ---
+        let selectedPlan = 'premium'; 
         let selectedPrice = 79.90;
 
         window.selectPlan = (plan, price) => {
@@ -239,10 +238,13 @@
                 .replace(/\-\-+/g, '-');
         }
 
+        // ================================================
+        // 🔥 NOVA FUNÇÃO: CRIAR LOJA COM 15 DIAS GRÁTIS
+        // ================================================
         window.contratar = async () => {
             const check = document.getElementById('checkTermos');
             if(!check.checked) {
-                alert("⚠️ Você precisa aceitar os Termos de Uso para criar sua loja.");
+                alert("⚠️ Você precisa aceitar os Termos de Uso.");
                 return;
             }
 
@@ -253,7 +255,7 @@
             if(!nome || !zap) return alert("Preencha todos os campos!");
             
             btn.disabled = true;
-            btn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Criando...";
+            btn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Configurando...";
 
             try {
                 const slug = criarSlug(nome);
@@ -261,17 +263,20 @@
                 const snapshot = await get(lojaRef);
 
                 if(!snapshot.exists()) {
-                    // GERAÇÃO DE CÓDIGO SEGURO
-                    const codigoAtivacao = Math.random().toString(36).substring(2, 6).toUpperCase();
-                    
+                    // CALCULA DATA DE VENCIMENTO (HOJE + 15 DIAS)
+                    const hoje = new Date();
+                    const dataVencimento = new Date(hoje);
+                    dataVencimento.setDate(hoje.getDate() + 15);
+
+                    // Cria a loja já ATIVA e em MODO TESTE
                     await set(lojaRef, {
                         config: { 
                             nome: nome, 
                             zap: zap, 
-                            status: "pendente",
-                            codigo_secreto: codigoAtivacao,
-                            plano_escolhido: selectedPlan, // 'basico' ou 'premium'
-                            validade: new Date().toISOString(),
+                            status: "ativo",     // Já libera acesso
+                            em_teste: true,      // Marca visualmente no Admin Master
+                            plano_escolhido: selectedPlan, 
+                            validade: dataVencimento.toISOString(), // Expira em 15 dias
                             aceitou_termos: new Date().toISOString()
                         },
                         produtos: {}
@@ -279,14 +284,16 @@
                     
                     localStorage.setItem('minha_loja_id', slug);
 
-                    const seuNumero = "5597984431811"; 
-                    // Mensagem ajustada para o novo modelo
-                    const msg = `Olá! Quero ativar a loja *${nome}* no plano *${selectedPlan.toUpperCase()}* (R$ ${selectedPrice}). Li e aceito os termos. Aguardo a chave.`;
-                    window.open(`https://wa.me/${seuNumero}?text=${encodeURIComponent(msg)}`, '_blank');
+                    // Opcional: Notificar seu WhatsApp (sem travar o usuário)
+                    // const seuNumero = "5597984431811"; 
+                    // const msg = `Novo LEAD: Loja *${nome}* criada em teste grátis (${selectedPlan}).`;
+                    // window.open(`https://wa.me/${seuNumero}?text=${encodeURIComponent(msg)}`, '_blank');
                     
                     setTimeout(() => {
+                        alert("🎉 Loja criada! Aproveite seus 15 dias grátis.");
                         window.location.href = `admin.html?id=${slug}`;
                     }, 1000);
+
                 } else {
                     alert("Essa loja já existe! Se for sua, clique em 'Entrar'.");
                     btn.disabled = false;
@@ -295,7 +302,7 @@
             } catch (e) {
                 alert("Erro: " + e.message);
                 btn.disabled = false;
-                btn.innerText = "CRIAR AGORA";
+                btn.innerText = "TENTAR NOVAMENTE";
             }
         }
     </script>
